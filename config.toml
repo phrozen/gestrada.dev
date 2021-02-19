@@ -1,3 +1,74 @@
-baseURL = "http://example.org/"
-languageCode = "en-us"
-title = "My New Hugo Site"
+baseURL = "https://gestrada.dev/"
+title = "gestrada.dev"
+theme = "hugo-coder"
+languagecode = "en-us"
+defaultcontentlanguage = "en"
+
+paginate = 20
+
+pygmentsstyle = "monokai"
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+
+# Coder Theme Params
+# https://github.com/luizdepra/hugo-coder/wiki/Configurations#complete-example
+[params]
+    author = "Guillermo Estrada"
+    info = "Full Stack Developer and Generative Artist"
+    description = "Guillermo's Dev Blog"
+    keywords = "blog,developer,golang,generative art"
+    gravatar = "phrzn@live.com"
+    footercontent = "Day dreamer, analytical brainiac, shameless romantic, factual magician, practical poet, irrational empath, generative artist, ninja coder and mind reader."
+
+    colorScheme = "auto"
+    enableTwemoji = true
+
+[taxonomies]
+  category = "categories"
+  series = "series"
+  tag = "tags"
+
+[params.goatCounter]
+    code = "gestrada"
+
+[params.utterances]
+    repo = "phrozen/gestrada.dev"     # https://utteranc.es/#heading-repository
+    issueTerm = "pathname"            # https://utteranc.es/#heading-mapping
+    label = "Label"                   # https://utteranc.es/#heading-issue-label
+    theme = "preferred-color-scheme"  # https://utteranc.es/#heading-theme
+
+[[params.social]]
+    name = "Github"
+    icon = "fa fa-github fa-2x"
+    weight = 1
+    url = "https://github.com/phrozen/"
+[[params.social]]
+    name = "LinkedIn"
+    icon = "fa fa-linkedin fa-2x"
+    weight = 2
+    url = "https://www.linkedin.com/in/phrozen/"
+[[params.social]]
+    name = "Twitter"
+    icon = "fa fa-twitter fa-2x"
+    weight = 3
+    url = "https://twitter.com/phrzn/"
+[[params.social]]
+    name = "Instagram"
+    icon = "fa fa-instagram fa-2x"
+    weight = 3
+    url = "https://www.instagram.com/phrzn/"
+[[params.social]]
+    name = "RSS"
+    icon = "fa fa-rss fa-2x"
+    weight = 3
+    url = "https://gestrada.dev/index.xml"
+
+# Menu links
+[[menu.main]]
+    name = "Blog"
+    weight = 1
+    url  = "posts/"
+[[menu.main]]
+    name = "About"
+    weight = 2
+    url = "about/"
