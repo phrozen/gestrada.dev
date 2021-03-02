@@ -13,7 +13,7 @@ I always thought I would never have the time or enough content to publish, and w
     <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Hello Blog!&#34;</span>)
 }
 </code></pre></div><p>&mldr; and be done with it!</p><p>But this time, I would like to do something related to generative art, as this blog is going to track all the progress and projects I do regarding that adventure (among any other dev related stuff here and there). For that purpose, an appropriate first project was necessary, and after very little deliberation, what a better place to start than with <em>Conway&rsquo;s The Game of Life</em>! It is sort of the <em>Hello World</em> of generative art after all. (isn&rsquo;t it? 😅)</p><h4 id=introduction>Introduction
-<a class=heading-link href=#introduction><i class="fa fa-link" aria-hidden=true></i></a></h4><p>For those of us who thought <em>The Game of Life</em> or just <em>Life</em> for short, was an <a href=https://en.wikipedia.org/wiki/The_Game_of_Life>old family board game created by Milton Bradley</a>, we need a little bit more of an introduction to <em>Conway&rsquo;s Game of Life</em>, so directly from it&rsquo;s <a href=https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life>Wikipedia article</a>:</p><blockquote><p>The Game of Life, also known simply as Life, is a cellular automaton devised by the British mathematician John Horton Conway in 1970. It is a zero-player game, meaning that its evolution is determined by its initial state, requiring no further input. One interacts with the Game of Life by creating an initial configuration and observing how it evolves. It is Turing complete and can simulate a universal constructor or any other Turing machine.</p></blockquote><p>This is really interesting, and it seems easy to implement and a lot of fun to play with once you have a little more information about the algorithm. It also produces very good looking results and you can tweak the implementation in a lot of ways to produce more artistic animations, all through code! 😁 So, where to start? Let&rsquo;s keep reading:</p><blockquote><p>The universe of the Game of Life is an infinite, two-dimensional orthogonal grid of square cells, each of which is in one of two possible states, live or dead, (or populated and unpopulated, respectively). Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally adjacent.</p></blockquote><p>So, once we start talking about two-dimension orthogonal grids, it immediately comes to mind a way to implement it using arrays, and although we cannot make an infinite grid using arrays, we can simulate the <em>infinity</em> by wrapping the borders toroidally (just like Pac-Man ⍩⃝ would go out on one side of the screen and appear on the opposite side). Or we can <em>clamp</em> our grid to a finite size, just as if we are looking at a sample of this infinite world. Each of these discrete cells can only be in 2 states (alive | dead), so making a <code>boolean</code> array makes the most sense, but the question is: How do we play? How do we decide who lives and who dies?</p><p>In <em>Conway&rsquo;s Game of Life</em>, we determine the initial state of the grid, either by manually setting some cells to be alive arbitrarily or we can do so randomly. Doing it randomly seems to be the better approach, that way we can <em>&ldquo;play&rdquo;</em> with the initial state and we will get a different <em>&ldquo;game&rdquo;</em> every time. It is worth noting that there is no such thing as <em>random</em> in computers, we only have <em>pseudo-random number generators</em>, and that could potentially be good, because if we seed our generator, we can reproduce the exact same game by just using the same seed as an input. Once the initial state is set, we have to iterate through our grid and decide who lives and who dies into the next generation. We do so by following the rules set by Conway:</p><blockquote><p>At each step in time, the following transitions occur:</p><ol><li>Any live cell with fewer than two live neighbours dies, as if by under-population.</li><li>Any live cell with two or three live neighbours lives on to the next generation.</li><li>Any live cell with more than three live neighbours dies, as if by over-population.</li><li>Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.</li></ol></blockquote><p>That seems simple enough, to implement this we have to maintain two states, the current generation and the next generation, and we can reuse both states by swapping them in each time step. To calculate the next generation state we have to iterate over the current one, and for each cell, check all it&rsquo;s neighbours and get a count of how many are alive, then proceed to seed the next generation based on these rules. After that, the next generation becomes the current generation and we start all over again. Let&rsquo;s do this!</p><p>There are hundreds of implementations of <em>Conway&rsquo;s Game of Life</em> all over the internet, there is even one for the console in the <a href=https://golang.org/doc/play/life.go>Go documentation</a> and of course there is another one in the <a href=https://p5js.org/examples/simulate-game-of-life.html>p5.js examples</a>, so let&rsquo;s try something different. This time let&rsquo;s work with 1D arrays! One dimensional arrays (or just arrays as we know them) are usually used in computer graphic to represent images, frame buffers and all kind of two dimensional matrix. The reason is, there is no concept of 2D arrays for computers, those are just mathematical constructs on top of arbitrary data on any length. Usually the most resource intensive part of any graphics sketch is the rendering, and 2D arrays are not very optimal because we have to iterate over them and set each pixel 1 by 1 (or 1 row at a time), but with 1D arrays we could set the whole pixel data in a single assignment if we plan for it!</p><h4 id=writing-some-code>Writing some code
+<a class=heading-link href=#introduction><i class="fa fa-link" aria-hidden=true></i></a></h4><p>For those of us who thought <em>The Game of Life</em> or just <em>Life</em> for short, was an <a href=https://en.wikipedia.org/wiki/The_Game_of_Life>old family board game created by Milton Bradley</a>, we need a little bit more of an introduction to <em>Conway&rsquo;s Game of Life</em>, so directly from it&rsquo;s <a href=https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life>Wikipedia article</a>:</p><blockquote><p>The Game of Life, also known simply as Life, is a cellular automaton devised by the British mathematician John Horton Conway in 1970. It is a zero-player game, meaning that its evolution is determined by its initial state, requiring no further input. One interacts with the Game of Life by creating an initial configuration and observing how it evolves. It is Turing complete and can simulate a universal constructor or any other Turing machine.</p></blockquote><p>This is really interesting, and it seems easy to implement and a lot of fun to play with once you have a little more information about the algorithm. It also produces very good looking results and you can tweak the implementation in a lot of ways to produce more artistic animations, all through code! 😁 So, where to start? Let&rsquo;s keep reading:</p><blockquote><p>The universe of the Game of Life is an infinite, two-dimensional orthogonal grid of square cells, each of which is in one of two possible states, live or dead, (or populated and unpopulated, respectively). Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally adjacent.</p></blockquote><p>So, once we start talking about two-dimension orthogonal grids, it immediately comes to mind a way to implement it using arrays, and although we cannot make an infinite grid using arrays, we can simulate the <em>infinity</em> by wrapping the borders toroidally (just like Pac-Man ⍩⃝ would go out on one side of the screen and appear on the opposite side). Or we can <em>clamp</em> our grid to a finite size, just as if we are looking at a sample of this infinite world. Each of these discrete cells can only be in 2 states (alive | dead), so making a <code>boolean</code> array makes the most sense, but the question is: How do we play? How do we decide who lives and who dies?</p><p>In <em>Conway&rsquo;s Game of Life</em>, we determine the initial state of the grid, either by manually setting some cells to be alive arbitrarily or we can do so randomly. Doing it randomly seems to be the better approach, that way we can <em>&ldquo;play&rdquo;</em> with the initial state and we will get a different <em>&ldquo;game&rdquo;</em> every time. It is worth noting that there is no such thing as <em>random</em> in computers, we only have <em>pseudo-random number generators</em>, and that could potentially be good, because if we seed our generator, we can reproduce the exact same game by just using the same seed as an input. Once the initial state is set, we have to iterate through our grid and decide who lives and who dies into the next generation. We do so by following the rules set by Conway:</p><blockquote><p>At each step in time, the following transitions occur:</p><ol><li>Any live cell with fewer than two live neighbours dies, as if by under-population.</li><li>Any live cell with two or three live neighbours lives on to the next generation.</li><li>Any live cell with more than three live neighbours dies, as if by over-population.</li><li>Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.</li></ol></blockquote><p>That seems simple enough, to implement this we have to maintain two states, the current generation and the next generation, and we can reuse both states by swapping them in each time step. To calculate the next generation state we have to iterate over the current one, and for each cell, check all it&rsquo;s neighbours and get a count of how many are alive, then proceed to seed the next generation based on these rules. After that, the next generation becomes the current generation and we start all over again. Let&rsquo;s do this!</p><p>There are hundreds of implementations of <em>Conway&rsquo;s Game of Life</em> all over the internet, there is even one for the console in the <a href=https://golang.org/doc/play/life.go>Go documentation</a> and of course there is another one in the <a href=https://p5js.org/examples/simulate-game-of-life.html>p5.js examples</a>, so let&rsquo;s try something different. This time let&rsquo;s work with 1D arrays! One dimensional arrays (or just arrays as we know them) are usually used in computer graphics to represent images, frame buffers and all kinds of two dimensional matrices. The reason is, there is no concept of 2D arrays for computers, those are just mathematical constructs on top of arbitrary data on any length. Usually the most resource intensive part of any graphics sketch is the rendering, and 2D arrays are not very optimal because we have to iterate over them and set each pixel 1 by 1 (or 1 row at a time), but with 1D arrays we could set the whole pixel data in a single assignment if we plan for it!</p><h4 id=writing-some-code>Writing some code
 <a class=heading-link href=#writing-some-code><i class="fa fa-link" aria-hidden=true></i></a></h4><p>Let&rsquo;s not get ahead of ourselves and start coding something. We&rsquo;re going to be using <a href=https://p5js.org/>p5.js</a> for this very simple example of life. From their site:</p><blockquote><p>p5.js is a JavaScript library for creative coding, with a focus on making coding accessible and inclusive for artists, designers, educators, beginners, and anyone else! p5.js is free and open-source because we believe software, and the tools to learn it, should be accessible to everyone.</p></blockquote><p>Every sketch starts the same, with 2 required functions <code>setup</code> and <code>draw</code>, aside from that, everything else is just plain old javascript and everything is fair game, let&rsquo;s start by doing our <code>setup</code> and have some arrays to store the state of our cells.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>size</span>;             <span style=color:#75715e>// simplify code
 </span><span style=color:#75715e></span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>state</span>, <span style=color:#a6e22e>next</span>;      <span style=color:#75715e>// current and next generation
 </span><span style=color:#75715e></span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>live</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>255</span>;       <span style=color:#75715e>// color for live cells
@@ -31,7 +31,7 @@ I always thought I would never have the time or enough content to publish, and w
 <span style=color:#75715e>// From 1D(i) to 2D(x, y)
 </span><span style=color:#75715e></span><span style=color:#a6e22e>x</span> = <span style=color:#a6e22e>i</span> <span style=color:#f92672>%</span> <span style=color:#a6e22e>width</span>
 <span style=color:#a6e22e>y</span> = <span style=color:#a6e22e>i</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>width</span>
-</code></pre></div><p>In a 1D array, we store each row(y) of pixels one after the other, so we need to always use the width to know when each of those rows end and the next one begins. Conversions are very straight forward, but it&rsquo;s worth noting that depending on the language and platform, one has to be careful that <code>y</code> might be a floating point number, and we can only index arrays with integer numbers so let&rsquo;s be careful move on. One thing to note about 1D arrays, is that they are already toroidally bound (of sorts 😅) on the x axis! That means that for <code>x == width</code> if we do <code>x + 1</code>, what usually would be an <code>out of bounds</code> error on 2D arrays, in a 1D array, we just get the first item of the next row (on the other side of the screen). Not perfect but it will be good enough for this use case, we will bound the y axis later on too.</p><p>The next step would be seeding our initial state with random live cells. In a 2D array we could simply iterate over it and randomly set the cell state, but this will always give us approximately 50% of live/dead cells each time (just like flipping a coin). With 1D arrays on the other hand, we can define a percentage of live cells to seed our initial state, then generate that percentage of random numbers between <code>0</code> and <code>size</code> and use them as index to set those cells to a live state. Definitely faster, simpler and more flexible. Declare our <code>percentage</code> at the top and create our seed function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// Randomly seeds the state with live cells
+</code></pre></div><p>In a 1D array, we store each row(y) of pixels one after the other, so we need to always use the width to know when each of those rows end and the next one begins. Conversions are very straightforward, but it&rsquo;s worth noting that depending on the language and platform, one has to be careful that <code>y</code> might be a floating point number, and we can only index arrays with <code>integer</code> numbers, so let&rsquo;s be careful and move on. One thing to note about 1D arrays, is that they are already toroidally bound (of sorts 😅) on the x axis! That means that for <code>x == width</code> if we do <code>x + 1</code>, what usually would be an <code>out of bounds</code> error on 2D arrays, in a 1D array, we just get the first item of the next row (on the other side of the screen). Not perfect but it will be good enough for this use case, we will bound the y axis later on too.</p><p>The next step would be seeding our initial state with random live cells. In a 2D array we could simply iterate over it and randomly set the cell state, but this will always give us approximately 50% of live/dead cells each time (just like flipping a coin). With 1D arrays on the other hand, we can define a percentage of live cells to seed our initial state, then generate that percentage of random numbers between <code>0</code> and <code>size</code> and use them as index to set those cells to a live state. Definitely faster, simpler and more flexible. Declare our <code>percentage</code> at the top and create our seed function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// Randomly seeds the state with live cells
 </span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>seed</span>() {
   <span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>fill</span>(<span style=color:#a6e22e>dead</span>);
   <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>living</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>size</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>percentage</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>100</span>);
@@ -89,8 +89,106 @@ I always thought I would never have the time or enough content to publish, and w
 </span><span style=color:#75715e></span>  }
   <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>tmp</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>state</span>; <span style=color:#a6e22e>state</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>next</span>; <span style=color:#a6e22e>next</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>tmp</span>;
 }
-</code></pre></div><p>The code is weirdly formatted on purpose for readability. As said before, we iterate over each cell and for each one, we count the number of live neighbours it has (that is why <code>at(i)</code> returns 0 or 1) by iterating over our <code>offset</code> array defined above. After that we follow Conway&rsquo;s rules to determine what the status of that cell will be towards the next generation. This could be simplified a bit further between the first and second checks (over and under population), but I think it&rsquo;s a bit more explicit what is happening this way. Finally we swap our current generation (<code>state</code>) with the next generation. Let&rsquo;s give it a try, shall we?</p><h4 id=simple-life>Simple Life
-<a class=heading-link href=#simple-life><i class="fa fa-link" aria-hidden=true></i></a></h4><div class=sketch><div class=sketch-toolbar><div class=sketch-title><span><i class="fa fa-fw fa-chevron-right" aria-hidden=true></i>&nbsp;simple-life</span></div><div class=sketch-controls><a class=controls href=https://raw.githubusercontent.com/phrozen/gestrada.dev/main/content/sketches/simple-life.md target=_blank><i class="fa fa-fw fa-code" aria-hidden=true></i></a><a class=controls href=/sketches/simple-life target=_blank><i class="fa fa-fw fa-external-link" aria-hidden=true></i></a><a class=controls onclick='reload("simple-life")'><i class="fa fa-fw fa-refresh" aria-hidden=true></i></a></div></div><div class=sketch-container><iframe id=simple-life class=sketch-iframe src=/sketches/simple-life onload=resize(this) scrolling=no frameborder=0></iframe></div></div><p>Great! 😁 The initial state is randomly seeded with 25% live cells, and then we let the game follow it&rsquo;s course. But there is no fun in just watching it a single time, so you can click on
+</code></pre></div><p>The code is weirdly formatted on purpose for readability. As said before, we iterate over each cell and for each one, we count the number of live neighbours it has (that is why <code>at(i)</code> returns 0 or 1) by iterating over our <code>offset</code> array defined above. After that we follow Conway&rsquo;s rules to determine what the status of that cell will be towards the next generation. This could be simplified a bit further between the first and second checks (over and under population), but I think it&rsquo;s a bit more explicit what is happening this way. Finally we swap our current generation (<code>state</code>) with the next generation. Let&rsquo;s give it a try, shall we?</p><div class=sketch><div class=sketch-toolbar><div class=sketch-title><span><i class="fa fa-fw fa-chevron-right" aria-hidden=true></i>&nbsp;Simple Life</span></div><div class=sketch-controls><a class=controls href=https://github.com/phrozen/gestrada.dev/blob/main/content/posts/the-game-of-life/simple-life.js target=_blank><i class="fa fa-fw fa-code" aria-hidden=true></i></a><a class=controls href=/sketches/simple-life target=_blank><i class="fa fa-fw fa-external-link" aria-hidden=true></i></a><a class=controls onclick='reload("p5-simple-life")'><i class="fa fa-fw fa-refresh" aria-hidden=true></i></a></div></div><div class=sketch-container><iframe id=p5-simple-life class=sketch-iframe sandbox="allow-scripts allow-same-origin" srcdoc="
+  <!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html, body {
+                width: 100%;
+                border: 0;
+                padding: 0;
+                margin: 0;
+            }
+            main, .p5Canvas {
+                width: 100% !important;
+                height: auto !important;
+                max-width: 860px;
+                display: block;
+                image-rendering: pixelated;
+            }
+        </style>
+        <script src=&#34;https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js&#34;></script>
+    </head>
+    <body>
+        <script>
+            
+    let size;               // width * height (DRY)
+let state, next;        // current and next generation
+let percentage = 25;    // ~% of live cells to seed
+let live = 255;         // color for live cells ('limegreen', '#FF6600')
+let dead = 0;           // color for dead cells ('pink', 'rgba(123,45,67)')
+let offset;             // hold the adjacent offsets of neighbours
+
+function setup() {
+    createCanvas(180, 120);
+    frameRate(10);
+    size = width * height;
+    state = Array(size).fill(dead);
+    next = Array(size).fill(dead);
+    offset = [ // offsets for neighbours in 1D array
+        -width - 1, // nw
+        -width,     // n
+        -width + 1, // ne
+        1,          // e
+        width + 1,  // se
+        width,      // s
+        width - 1,  // sw
+        -1,         // w
+    ];
+    seed();
+}
+
+// Main rendering loop
+function draw() {
+    for (let i = 0; i < size; i++) {
+        set(i % width, i / width, color(state[i]));
+    }
+    updatePixels();
+    step();
+}
+
+// Randomly seeds the state with live cells
+function seed() {
+    state.fill(dead);
+    const living = floor(size * percentage / 100);
+    for (let i = 0; i < living; i++) {
+        state[floor(random(size))] = live;
+    }
+}
+
+// Creates the next generation of cells
+function step() {
+    for (let i = 0; i < size; i++) {
+        let neighbours = 0;
+        for (let j of offset) {
+            neighbours += at(i + j);
+        }
+        if ((state[i] == live)      && (neighbours < 2))  next[i] = dead;     // under-population
+        else if ((state[i] == live) && (neighbours > 3))  next[i] = dead;     // over-population
+        else if ((state[i] == dead) && (neighbours == 3)) next[i] = live;     // reproduction
+        else                                              next[i] = state[i]; // stasis
+    }
+    let tmp = state;
+    state = next;
+    next = tmp;
+}
+
+// Gets cell 'status' at a given index (1D)
+function at(i) {
+    if (i < 0) i += size;
+    if (i > size) i -= size;
+    return state[i] == live ? 1 : 0;
+}
+
+function mousePressed() {
+    seed();
+}
+  
+        </script>
+    </body>
+</html>
+" onload=resize(this) scrolling=no frameborder=0></iframe></div></div><p>Great! 😁 The initial state is randomly seeded with 25% live cells, and then we let the game follow it&rsquo;s course. But there is no fun in just watching it a single time, so you can click on
 <i class="fa fa-fw fa-refresh accent" aria-hidden=true></i>or anywhere on the canvas to re-seed the state and restart the game. This usually runs much faster, specially for the canvas size we picked as it&rsquo;s very small, but I used <code>frameRate(10)</code> in our setup so that each step in time could be appreciated. You can click on
 <i class="fa fa-fw fa-code accent" aria-hidden=true></i>on the sketch toolbar to check the code in Github. If you try this code in the <a href=https://editor.p5js.org/>p5.js web editor</a>, you will notice that the sketch is really small, exactly the way we defined it in the <code>setup</code> with <code>createCanvas(180, 120)</code>, as we are actually using pixels! Your first impulse would be to change the size and make the canvas bigger, but that will not scale the pixels, you are just going to have a lot more cells to deal with. That is why most people implement <em>The Game of Life</em> by drawing squares or so, but the trick here, is that the browser already has the ability to scale the <code>canvas</code> element regardless of it&rsquo;s size! So while embedding sketches in my blog I&rsquo;m using&mldr;</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-css data-lang=css><span style=color:#f92672>main</span><span style=color:#f92672>,</span> .<span style=color:#a6e22e>p5Canvas</span> {
     <span style=color:#66d9ef>width</span>: <span style=color:#ae81ff>100</span><span style=color:#66d9ef>%</span> <span style=color:#75715e>!important</span>;
@@ -100,13 +198,13 @@ I always thought I would never have the time or enough content to publish, and w
     image-rendering: <span style=color:#66d9ef>pixelated</span>;
 }
 </code></pre></div><p>&mldr; essentially overriding p5.js style and making the canvas scale to the content, it also makes it responsive if we also scale the <code>iframe</code> (try resizing the browser). Neat! One attribute is apparently not supported in
-<i class="fa fa-fw fa-firefox accent" aria-hidden=true></i>Firefox (at the time of writing) and that is <code>image-rendering: pixelated</code>. What it does, is essentially disabling interpolation while scaling our canvas, so our little pixels don&rsquo;t blur out and look like perfect squares when scaled up! You can read all about it in the <a href=https://developer.mozilla.org/es/docs/Web/CSS/image-rendering>MDN Web Docs</a>.</p><p>But, what if we wanted to implement it in a large canvas with colors and figures like everyone else? This is about generative art after all, right? There is not much art in diminutive black and white pixels dancing around a canvas (or&mldr; is there? 🤔). Thankfully the way we implemented this version makes it incredibly easy to play and create different versions of the game. Let&rsquo;s start by doing some changes in our setup and variables. I will only show the meaningful changes, as always the full code is available on Github.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>live</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span>;      <span style=color:#75715e>// Use booleans as we don&#39;t need to store
+<i class="fa fa-fw fa-firefox accent" aria-hidden=true></i>Firefox (at the time of writing) and that is <code>image-rendering: pixelated</code>. What it does, is essentially disabling interpolation while scaling our canvas, so our little pixels don&rsquo;t blur out and look like perfect squares when scaled up! You can read all about it in the <a href=https://developer.mozilla.org/es/docs/Web/CSS/image-rendering>MDN Web Docs</a>.</p><p>But, what if we wanted to implement it in a large canvas with colors and figures like everyone else? This is about generative art after all. There is not much art in diminutive black and white pixels dancing around a canvas (or&mldr; is there? 🤔). Thankfully the way we implemented this version makes it incredibly easy to play and create different versions of the game. Let&rsquo;s start by doing some changes in our setup and variables. I will only show the meaningful changes, as always the full code is available on Github.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>live</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span>;      <span style=color:#75715e>// Use booleans as we don&#39;t need to store
 </span><span style=color:#75715e></span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>dead</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span>;     <span style=color:#75715e>// the color, it&#39;s calculated on draw
 </span><span style=color:#75715e></span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>resolution</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>10</span>;  <span style=color:#75715e>// To create a virtual grid on top the canvas
 </span><span style=color:#75715e></span>
 <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>setup</span>() {
   <span style=color:#a6e22e>createCanvas</span>(<span style=color:#ae81ff>1280</span>, <span style=color:#ae81ff>720</span>);
-  <span style=color:#a6e22e>noStroke</span>(); <span style=color:#75715e>// disables the stroke when figure drawing
+  <span style=color:#a6e22e>noStroke</span>();         <span style=color:#75715e>// disables the stroke when figure drawing
 </span><span style=color:#75715e></span>  <span style=color:#a6e22e>width</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>width</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>resolution</span>;
   <span style=color:#a6e22e>height</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>height</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>resolution</span>;
   <span style=color:#a6e22e>size</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>width</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>height</span>;
@@ -129,10 +227,127 @@ I always thought I would never have the time or enough content to publish, and w
 <span style=color:#75715e>// Draws a colored circle with interpolated hue
 </span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>cell</span>(<span style=color:#a6e22e>i</span>, <span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>y</span>) {
   <span style=color:#a6e22e>fill</span>(<span style=color:#e6db74>`hsl(</span><span style=color:#e6db74>${</span><span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>map</span>(<span style=color:#a6e22e>i</span>,<span style=color:#ae81ff>0</span>,<span style=color:#a6e22e>size</span>,<span style=color:#ae81ff>0</span>,<span style=color:#ae81ff>360</span>))<span style=color:#e6db74>}</span><span style=color:#e6db74>,100%,50%)`</span>);
-  <span style=color:#a6e22e>circle</span>(<span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>x</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>half</span>, <span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>y</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>half</span>, <span style=color:#a6e22e>resolution</span>);
+  <span style=color:#a6e22e>circle</span>(<span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>x</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>resolution</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>2</span>, <span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>y</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>resolution</span> <span style=color:#f92672>/</span> <span style=color:#ae81ff>2</span>, <span style=color:#a6e22e>resolution</span>);
 }
-</code></pre></div><p>That is all, let&rsquo;s quickly review what is happening, first we <code>clear()</code> the canvas and fill it with black <code>background(0)</code> as we are only going to be drawing live cells (way more efficient). Next we proceed as usual, but check for live cells only <code>state[i] == live</code> (for readability as <code>state[i]</code> is already a boolean). Now the magic happens, we need to scale both <code>x</code> and <code>y</code> back to screen coordinates by multiplying them by the resolution, and in <code>cell(i, x, y)</code> we set the <code>fill(color)</code> with a neat trick by interpolating <code>i</code> into the hue [0, 360) of an <code>HSL</code> color! And finally we draw our cell as a colored <code>circle(x, y, radius)</code> with an offset to center it. Let&rsquo;s see it in action! 😎</p><h4 id=colorful-life>Colorful Life
-<a class=heading-link href=#colorful-life><i class="fa fa-link" aria-hidden=true></i></a></h4><div class=sketch><div class=sketch-toolbar><div class=sketch-title><span><i class="fa fa-fw fa-chevron-right" aria-hidden=true></i>&nbsp;colorful-life</span></div><div class=sketch-controls><a class=controls href=https://raw.githubusercontent.com/phrozen/gestrada.dev/main/content/sketches/colorful-life.md target=_blank><i class="fa fa-fw fa-code" aria-hidden=true></i></a><a class=controls href=/sketches/colorful-life target=_blank><i class="fa fa-fw fa-external-link" aria-hidden=true></i></a><a class=controls onclick='reload("colorful-life")'><i class="fa fa-fw fa-refresh" aria-hidden=true></i></a></div></div><div class=sketch-container><iframe id=colorful-life class=sketch-iframe src=/sketches/colorful-life onload=resize(this) scrolling=no frameborder=0></iframe></div></div><p>Bravo! I separated <code>cell</code> into a new function to add a bit more fun to <em>The Game of Life</em>, now instead of re-seeding randomly by clicking on the canvas, it actually seeds new cells manually! Try it, just press the mouse button and draw some live cells directly to the current generation while it remains <code>paused</code>. Now it&rsquo;s way more fun to play with it. To achieve this, we simply modify <code>draw()</code> like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// Main rendering loop
+</code></pre></div><p>That is all, let&rsquo;s quickly review what is happening, first we <code>clear()</code> the canvas and fill it with black <code>background(0)</code> as we are only going to be drawing live cells (way more efficient). Next we proceed as usual, but check for live cells only <code>state[i] == live</code> (for readability as <code>state[i]</code> is already a boolean). Now the magic happens, we need to scale both <code>x</code> and <code>y</code> back to screen coordinates by multiplying them by the resolution, and in <code>cell(i, x, y)</code> we set the <code>fill(color)</code> with a neat trick by interpolating <code>i</code> into the hue [0, 360) of an <code>HSL</code> color! And finally we draw our cell as a colored <code>circle(x, y, radius)</code> with an offset to center it. Let&rsquo;s see it in action! 😎</p><div class=sketch><div class=sketch-toolbar><div class=sketch-title><span><i class="fa fa-fw fa-chevron-right" aria-hidden=true></i>&nbsp;Colorful Life</span></div><div class=sketch-controls><a class=controls href=https://github.com/phrozen/gestrada.dev/blob/main/content/posts/the-game-of-life/colorful-life.js target=_blank><i class="fa fa-fw fa-code" aria-hidden=true></i></a><a class=controls href=/sketches/colorful-life target=_blank><i class="fa fa-fw fa-external-link" aria-hidden=true></i></a><a class=controls onclick='reload("p5-colorful-life")'><i class="fa fa-fw fa-refresh" aria-hidden=true></i></a></div></div><div class=sketch-container><iframe id=p5-colorful-life class=sketch-iframe sandbox="allow-scripts allow-same-origin" srcdoc="
+  <!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html, body {
+                width: 100%;
+                border: 0;
+                padding: 0;
+                margin: 0;
+            }
+            main, .p5Canvas {
+                width: 100% !important;
+                height: auto !important;
+                max-width: 860px;
+                display: block;
+                image-rendering: pixelated;
+            }
+        </style>
+        <script src=&#34;https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js&#34;></script>
+    </head>
+    <body>
+        <script>
+            
+    let size;               // width * height (readability)
+let state, next;        // current and nex generation
+let percentage = 25;    // ~% of live cells to seed
+let live = true;        // Use booleans as we don't need to store
+let dead = false;       // the color, it's calculated on draw
+let offset;             // hold the adjacent offsets of neighbours
+let resolution = 10;    // to create a virtual grid on top the canvas
+let half;               // readability (resolution / 2)
+
+function setup() {
+    createCanvas(1280, 720);
+    frameRate(15);
+    noStroke();
+    width = width / resolution;
+    height = height / resolution;
+    size = width * height;
+    half = resolution / 2;
+    state = Array(size).fill(dead);
+    next = Array(size).fill(dead);
+    offset = [ // offsets for neighbours in 1D array
+        -width - 1, // nw
+        -width, // n
+        -width + 1, // ne
+        1, // e
+        width + 1, // se
+        width, // s
+        width - 1, // sw
+        -1, // w
+    ];
+    seed();
+}
+
+// Main rendering loop
+function draw() {
+    if (mouseIsPressed === true) {
+        let i = floor(mouseY / resolution) * width + floor(mouseX / resolution);
+        state[i] = live;
+        cell(i, mouseX, mouseY);
+        return;
+    }
+
+    clear();
+    background(0);
+    for (let i = 0; i < size; i++) {
+        if (state[i]) {
+            let x = (i % width) * resolution;
+            let y = (i / width) * resolution;
+            cell(i, x, y);
+        }
+    }
+    step();
+}
+
+// Draws a colored circle with interpolated hue
+function cell(i, x, y) {
+    fill(`hsl(${floor(map(i,0,size,0,360))},100%,50%)`);
+    circle(floor(x) + half, floor(y) + half, resolution);
+}
+
+// Randomly seeds the state with live cells
+function seed() {
+    state.fill(dead);
+    const living = floor(size * percentage / 100);
+    for (let i = 0; i < living; i++) {
+        state[floor(random(size))] = live;
+    }
+}
+
+// Creates the next generation of cells
+function step() {
+    for (let i = 0; i < size; i++) {
+        let neighbours = 0;
+        for (let j of offset) {
+            neighbours += at(i + j);
+        }
+        if ((state[i] == live) && (neighbours < 2 || neighbours > 3)) next[i] = dead;
+        else if ((state[i] == dead) && (neighbours == 3)) next[i] = live;
+        else next[i] = state[i];
+    }
+    let tmp = state;
+    state = next;
+    next = tmp;
+}
+
+// Gets cell 'status' at a given index (1D)
+function at(i) {
+    if (i < 0) i += size;
+    if (i > size) i -= size;
+    return state[i] == live ? 1 : 0;
+}
+  
+        </script>
+    </body>
+</html>
+" onload=resize(this) scrolling=no frameborder=0></iframe></div></div><p>Bravo! I separated <code>cell</code> into a new function to add a bit more fun to <em>The Game of Life</em>, now instead of re-seeding randomly by clicking on the canvas, it actually seeds new cells manually! Try it, just press the mouse button and draw some live cells directly to the current generation while it remains <code>paused</code>. Now it&rsquo;s way more fun to play with it. To achieve this, we simply modify <code>draw()</code> like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// Main rendering loop
 </span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>draw</span>() {
   <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>mouseIsPressed</span> <span style=color:#f92672>===</span> <span style=color:#66d9ef>true</span>) {
     <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>mouseY</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>resolution</span>) <span style=color:#f92672>*</span> <span style=color:#a6e22e>width</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>floor</span>(<span style=color:#a6e22e>mouseX</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>resolution</span>);
