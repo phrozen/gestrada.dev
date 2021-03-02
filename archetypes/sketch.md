@@ -5,11 +5,5 @@ author: Guillermo Estrada
 description: 
 ---
 <script>
-function setup() {
-
-}
-
-function draw() {
-
-}
+{{<include "" safe>}}
 </script>
