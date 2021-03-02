@@ -2,7 +2,10 @@
 {{ with getJSON "https://gestrada.dev/cover?id=" $id }}
 <div class="cover">
     <img class="cover" src="{{ .urls.full }}&fit=clip&h=700" title="{{ .description }}" alt="{{ .alt_description }}">
-    <p>Photo from <a href="{{ .links.html }}" target="_blank">Unsplash</a> by <a href="{{ .user.links.html }}" target="_blank">{{ .user.name }}</a></p>
+    <p>
+        Photo from <a href="{{ .links.html }}" target="_blank">Unsplash</a>
+        by <a href="{{ .user.links.html }}" target="_blank">{{ .user.name }}</a>
+    </p>
     <hr>
 </div>
 {{ end }}
