@@ -22,7 +22,7 @@ pygmentscodefencesguesssyntax = true
     keywords = "dev,blog,developer,golang,js,algorithms,generative art"
     gravatar = "phrzn@live.com"
     footercontent = "Day dreamer, analytical brainiac, shameless romantic, factual magician, practical poet, irrational empath, generative artist, ninja coder and mind reader."
-    githubRepo = "https://github.com/phrozen/gestrada.dev"
+    github = "https://github.com/phrozen/gestrada.dev"
     colorScheme = "auto"
     enableTwemoji = true
 
