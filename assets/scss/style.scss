@@ -1,0 +1,68 @@
+$accent: #ed225d;
+
+.accent {
+    color: $accent;
+}
+
+p {
+    code {
+        padding: 0 0.5rem;
+        border-radius: 2px;
+    }
+}
+
+
+.cover {
+    img {
+        width: 100%;
+        max-height: 350px;
+        border-radius: 1rem;
+        object-fit: cover;
+    }
+    p {
+        text-align: right !important;
+        margin: -1rem 0 0 0;
+        padding-right: 1rem;
+        font-size: 1rem;
+    }
+}
+
+.sketch {
+    .sketch-toolbar {
+        height: 2.5em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: $accent;
+        .sketch-title {
+            span {
+                font-size: 1em;
+                font-weight: 300;
+                color: white;
+                margin: 0 1em;
+            }
+        }
+        .sketch-controls {
+            height: 100%;
+            //display: flex;
+            a.controls {
+                display: inline-block;
+                width: 2.5em;
+                line-height: 2.5em;
+                color: white;
+                text-align: center;
+                cursor: pointer;
+            }
+        }
+    }
+    .sketch-container {
+        iframe.sketch-iframe {
+            display: block;
+            border: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+        }
+    }
+}

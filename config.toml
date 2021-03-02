@@ -10,18 +10,24 @@ pygmentsstyle = "monokai"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
+[markup.goldmark.renderer]
+    unsafe = true
+
 # Coder Theme Params
 # https://github.com/luizdepra/hugo-coder/wiki/Configurations#complete-example
 [params]
     author = "Guillermo Estrada"
-    info = "Full Stack Developer and Generative Artist"
-    description = "Guillermo's Dev Blog"
-    keywords = "blog,developer,golang,generative art"
+    info = "Full Stack Developer and Generative Artist (in progress...)"
+    description = "Guillermo Estrada Dev Blog"
+    keywords = "dev,blog,developer,golang,js,algorithms,generative art"
     gravatar = "phrzn@live.com"
     footercontent = "Day dreamer, analytical brainiac, shameless romantic, factual magician, practical poet, irrational empath, generative artist, ninja coder and mind reader."
-
+    githubRepo = "https://github.com/phrozen/gestrada.dev"
     colorScheme = "auto"
     enableTwemoji = true
+
+    customSCSS = ["scss/style.scss"]
+    customJS = ["js/sketch.js"]
 
 [taxonomies]
   category = "categories"

@@ -2,3 +2,4 @@
 .hugo/*
 !.hugo/version
 public
+resources/_gen
