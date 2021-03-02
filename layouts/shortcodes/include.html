@@ -1,0 +1,6 @@
+{{ $safe := .Get 1 }}
+{{ if eq $safe "safe" }}
+    {{- readFile (.Get 0) | safeHTML -}}
+{{ else }}
+    {{- readFile (.Get 0) -}}
+{{ end }}
