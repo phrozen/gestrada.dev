@@ -3,7 +3,7 @@
     <div class="sketch-toolbar">
         <div class="sketch-title"><span><i class="fa fa-fw fa-chevron-right" aria-hidden="true"></i>&nbsp;{{ $id }}</span></div>
         <div class="sketch-controls">
-            <a class="controls" href="{{$.Site.Params.github}}/sketches/{{ $id }}.md" target="_blank"><i class="fa fa-fw fa-code" aria-hidden="true"></i></a>
+            <a class="controls" href="https://raw.githubusercontent.com/{{$.Site.Params.repo}}/main/content/sketches/{{ $id }}.md" target="_blank"><i class="fa fa-fw fa-code" aria-hidden="true"></i></a>
             <a class="controls" href="/sketches/{{ $id }}" target="_blank"><i class="fa fa-fw fa-external-link" aria-hidden="true"></i></a>
             <a class="controls" onclick="reload({{ $id }})"><i class="fa fa-fw fa-refresh" aria-hidden="true"></i></a>
             <!--
