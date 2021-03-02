@@ -57,7 +57,7 @@ In _Conway's Game of Life_, we determine the initial state of the grid, either b
 
 That seems simple enough, to implement this we have to maintain two states, the current generation and the next generation, and we can reuse both states by swapping them in each time step. To calculate the next generation state we have to iterate over the current one, and for each cell, check all it's neighbours and get a count of how many are alive, then proceed to seed the next generation based on these rules. After that, the next generation becomes the current generation and we start all over again. Let's do this!
 
-There are hundreds of implementations of _Conway's Game of Life_ all over the internet, there is even one for the console in the [Go documentation](https://golang.org/doc/play/life.go) and of course there is another one in the [p5.js examples](https://p5js.org/examples/simulate-game-of-life.html), so let's try something different. This time let's work with 1D arrays! One dimensional arrays (or just arrays as we know them) are usually used in computer graphic to represent images, frame buffers and all kind of two dimensional matrix. The reason is, there is no concept of 2D arrays for computers, those are just mathematical constructs on top of arbitrary data on any length. Usually the most resource intensive part of any graphics sketch is the rendering, and 2D arrays are not very optimal because we have to iterate over them and set each pixel 1 by 1 (or 1 row at a time), but with 1D arrays we could set the whole pixel data in a single assignment if we plan for it!
+There are hundreds of implementations of _Conway's Game of Life_ all over the internet, there is even one for the console in the [Go documentation](https://golang.org/doc/play/life.go) and of course there is another one in the [p5.js examples](https://p5js.org/examples/simulate-game-of-life.html), so let's try something different. This time let's work with 1D arrays! One dimensional arrays (or just arrays as we know them) are usually used in computer graphics to represent images, frame buffers and all kinds of two dimensional matrices. The reason is, there is no concept of 2D arrays for computers, those are just mathematical constructs on top of arbitrary data on any length. Usually the most resource intensive part of any graphics sketch is the rendering, and 2D arrays are not very optimal because we have to iterate over them and set each pixel 1 by 1 (or 1 row at a time), but with 1D arrays we could set the whole pixel data in a single assignment if we plan for it!
 
 
 #### Writing some code
@@ -93,7 +93,7 @@ x = i % width
 y = i / width
 ```
 
-In a 1D array, we store each row(y) of pixels one after the other, so we need to always use the width to know when each of those rows end and the next one begins. Conversions are very straight forward, but it's worth noting that depending on the language and platform, one has to be careful that `y` might be a floating point number, and we can only index arrays with integer numbers so let's be careful move on. One thing to note about 1D arrays, is that they are already toroidally bound (of sorts 😅) on the x axis! That means that for `x == width` if we do `x + 1`, what usually would be an `out of bounds` error on 2D arrays, in a 1D array, we just get the first item of the next row (on the other side of the screen). Not perfect but it will be good enough for this use case, we will bound the y axis later on too.
+In a 1D array, we store each row(y) of pixels one after the other, so we need to always use the width to know when each of those rows end and the next one begins. Conversions are very straightforward, but it's worth noting that depending on the language and platform, one has to be careful that `y` might be a floating point number, and we can only index arrays with `integer` numbers, so let's be careful and move on. One thing to note about 1D arrays, is that they are already toroidally bound (of sorts 😅) on the x axis! That means that for `x == width` if we do `x + 1`, what usually would be an `out of bounds` error on 2D arrays, in a 1D array, we just get the first item of the next row (on the other side of the screen). Not perfect but it will be good enough for this use case, we will bound the y axis later on too.
 
 The next step would be seeding our initial state with random live cells. In a 2D array we could simply iterate over it and randomly set the cell state, but this will always give us approximately 50% of live/dead cells each time (just like flipping a coin). With 1D arrays on the other hand, we can define a percentage of live cells to seed our initial state, then generate that percentage of random numbers between `0` and `size` and use them as index to set those cells to a live state. Definitely faster, simpler and more flexible. Declare our `percentage` at the top and create our seed function.
 
@@ -189,8 +189,11 @@ function step() {
 
 The code is weirdly formatted on purpose for readability. As said before, we iterate over each cell and for each one, we count the number of live neighbours it has (that is why `at(i)` returns 0 or 1) by iterating over our `offset` array defined above. After that we follow Conway's rules to determine what the status of that cell will be towards the next generation. This could be simplified a bit further between the first and second checks (over and under population), but I think it's a bit more explicit what is happening this way. Finally we swap our current generation (`state`) with the next generation. Let's give it a try, shall we?
 
-#### Simple Life
-{{<sketch simple-life>}}
+{{<sketch "Simple Life" >}}
+  {{<sketch-frame>}}
+    {{<sketch-file simple-life.js>}}
+  {{</sketch-frame>}}
+{{</sketch>}}
 
 Great! 😁 The initial state is randomly seeded with 25% live cells, and then we let the game follow it's course. But there is no fun in just watching it a single time, so you can click on {{<fa refresh accent>}} or anywhere on the canvas to re-seed the state and restart the game. This usually runs much faster, specially for the canvas size we picked as it's very small, but I used `frameRate(10)` in our setup so that each step in time could be appreciated. You can click on {{<fa code accent>}} on the sketch toolbar to check the code in Github. If you try this code in the [p5.js web editor](https://editor.p5js.org/), you will notice that the sketch is really small, exactly the way we defined it in the `setup` with `createCanvas(180, 120)`, as we are actually using pixels! Your first impulse would be to change the size and make the canvas bigger, but that will not scale the pixels, you are just going to have a lot more cells to deal with. That is why most people implement _The Game of Life_ by drawing squares or so, but the trick here, is that the browser already has the ability to scale the `canvas` element regardless of it's size! So while embedding sketches in my blog I'm using...
 
@@ -206,7 +209,7 @@ main, .p5Canvas {
 
 ... essentially overriding p5.js style and making the canvas scale to the content, it also makes it responsive if we also scale the `iframe` (try resizing the browser). Neat! One attribute is apparently not supported in {{<fa firefox accent>}} Firefox (at the time of writing) and that is `image-rendering: pixelated`. What it does, is essentially disabling interpolation while scaling our canvas, so our little pixels don't blur out and look like perfect squares when scaled up! You can read all about it in the [MDN Web Docs](https://developer.mozilla.org/es/docs/Web/CSS/image-rendering).
 
-But, what if we wanted to implement it in a large canvas with colors and figures like everyone else? This is about generative art after all, right? There is not much art in diminutive black and white pixels dancing around a canvas (or... is there? 🤔). Thankfully the way we implemented this version makes it incredibly easy to play and create different versions of the game. Let's start by doing some changes in our setup and variables. I will only show the meaningful changes, as always the full code is available on Github.
+But, what if we wanted to implement it in a large canvas with colors and figures like everyone else? This is about generative art after all. There is not much art in diminutive black and white pixels dancing around a canvas (or... is there? 🤔). Thankfully the way we implemented this version makes it incredibly easy to play and create different versions of the game. Let's start by doing some changes in our setup and variables. I will only show the meaningful changes, as always the full code is available on Github.
 
 ```js
 let live = true;      // Use booleans as we don't need to store
@@ -215,7 +218,7 @@ let resolution = 10;  // To create a virtual grid on top the canvas
 
 function setup() {
   createCanvas(1280, 720);
-  noStroke(); // disables the stroke when figure drawing
+  noStroke();         // disables the stroke when figure drawing
   width = width / resolution;
   height = height / resolution;
   size = width * height;
@@ -243,14 +246,17 @@ function draw() {
 // Draws a colored circle with interpolated hue
 function cell(i, x, y) {
   fill(`hsl(${floor(map(i,0,size,0,360))},100%,50%)`);
-  circle(floor(x) + half, floor(y) + half, resolution);
+  circle(floor(x) + resolution / 2, floor(y) + resolution / 2, resolution);
 }
 ```
 
 That is all, let's quickly review what is happening, first we `clear()` the canvas and fill it with black `background(0)` as we are only going to be drawing live cells (way more efficient). Next we proceed as usual, but check for live cells only `state[i] == live` (for readability as `state[i]` is already a boolean). Now the magic happens, we need to scale both `x` and `y` back to screen coordinates by multiplying them by the resolution, and in `cell(i, x, y)` we set the `fill(color)` with a neat trick by interpolating `i` into the hue [0, 360) of an `HSL` color! And finally we draw our cell as a colored `circle(x, y, radius)` with an offset to center it. Let's see it in action! 😎
 
-#### Colorful Life
-{{<sketch colorful-life>}}
+{{<sketch "Colorful Life">}}
+  {{<sketch-frame>}}
+    {{<sketch-file colorful-life.js>}}
+  {{</sketch-frame>}}
+{{</sketch>}}
 
 Bravo! I separated `cell` into a new function to add a bit more fun to *The Game of Life*, now instead of re-seeding randomly by clicking on the canvas, it actually seeds new cells manually! Try it, just press the mouse button and draw some live cells directly to the current generation while it remains `paused`. Now it's way more fun to play with it. To achieve this, we simply modify `draw()` like this:
 

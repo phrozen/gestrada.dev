@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html, body {
+                width: 100%;
+                border: 0;
+                padding: 0;
+                margin: 0;
+            }
+            main, .p5Canvas {
+                width: 100% !important;
+                height: auto !important;
+                max-width: 860px;
+                display: block;
+                image-rendering: pixelated;
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js"></script>
+    </head>
+    <body>
+        <script>
+            {{ .Inner | safeJS }}
+        </script>
+    </body>
+</html>
