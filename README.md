@@ -19,8 +19,8 @@ And everything else is powered and hosted by [Github](https://github.com/)! This
 Copyright © 2021 Guillermo Estrada. All work by the author is dual-licensed:
 
 All source code, is covered by the MIT License.  
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 All content and material is covered by the Creative Commons Attribution-ShareAlike 4.0 International License.  
-[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
+[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 
