@@ -162,8 +162,8 @@ One last thing before we proceed with `step()`, let's do a helper function `at(i
 ```js
 // Gets cell 'status' at a given index (1D)
 function at(i) {
-  if (i <0) i += size;
-  if (i> size) i -= size;
+  if (i < 0)     i += size;
+  if (i >= size) i -= size;
   return state[i] == live ? 1 : 0;
 }
 ```
