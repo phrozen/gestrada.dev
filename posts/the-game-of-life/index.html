@@ -71,8 +71,8 @@ I always thought I would never have the time or enough content to publish, and w
 </span><span style=color:#75715e></span>];
 </code></pre></div><p>One last thing before we proceed with <code>step()</code>, let&rsquo;s do a helper function <code>at(i)</code> that will tell us if the cell is <em>dead or alive</em> for any given position in the current state, and while we are at it, let&rsquo;s bound the <code>y</code> axis toroidally altogether.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// Gets cell &#39;status&#39; at a given index (1D)
 </span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>at</span>(<span style=color:#a6e22e>i</span>) {
-  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span><span style=color:#ae81ff>0</span>) <span style=color:#a6e22e>i</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>size</span>;
-  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>i</span><span style=color:#f92672>&gt;</span> <span style=color:#a6e22e>size</span>) <span style=color:#a6e22e>i</span> <span style=color:#f92672>-=</span> <span style=color:#a6e22e>size</span>;
+  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span>)     <span style=color:#a6e22e>i</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>size</span>;
+  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>i</span> <span style=color:#f92672>&gt;=</span> <span style=color:#a6e22e>size</span>) <span style=color:#a6e22e>i</span> <span style=color:#f92672>-=</span> <span style=color:#a6e22e>size</span>;
   <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>state</span>[<span style=color:#a6e22e>i</span>] <span style=color:#f92672>==</span> <span style=color:#a6e22e>live</span> <span style=color:#f92672>?</span> <span style=color:#ae81ff>1</span> <span style=color:#f92672>:</span> <span style=color:#ae81ff>0</span>;
 }
 </code></pre></div><p>What is happening here? As we only care about two bounds, if <code>index &lt; 0</code> we add <code>size</code> to it essentially moving the index to the last row <code>y</code> in the same <code>x</code> position. Comparable to that, if <code>index > size</code> we move it to the first row <code>y</code> by subtracting <code>size</code> from it. We then return <code>0</code> if it&rsquo;s dead or <code>1</code> if it&rsquo;s live, as we do not care about the actual color value of the state, but just the status for calculating the number of neighbours. Now, for the last part&mldr;</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// Creates the next generation of cells
@@ -176,8 +176,8 @@ function step() {
 
 // Gets cell 'status' at a given index (1D)
 function at(i) {
-    if (i < 0) i += size;
-    if (i > size) i -= size;
+    if (i < 0)      i += size;
+    if (i >= size)  i -= size;
     return state[i] == live ? 1 : 0;
 }
 
