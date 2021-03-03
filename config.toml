@@ -30,9 +30,9 @@ pygmentscodefencesguesssyntax = true
     customJS = ["js/sketch.js"]
 
 [taxonomies]
-  category = "categories"
-  series = "series"
-  tag = "tags"
+    category = "categories"
+    series = "series"
+    tag = "tags"
 
 [params.goatCounter]
     code = "gestrada"
