@@ -1,6 +1,5 @@
 {{ $title :=  (.Get "title") | default (.Get 0) }}
 {{ $id := (.Get "id" | default (.Get 1)) | default (replace $title " " "-" | lower) }}
-{{ .Scratch.Set "id" $id }}
 {{ $resource := .Page.Resources.GetMatch (print $id ".js") }}
 <div class="sketch">
     <div class="sketch-toolbar">
@@ -9,12 +8,10 @@
             <a class="controls" href="https://github.com/{{$.Site.Params.repo}}/blob/main/content{{ $resource.RelPermalink }}" target="_blank"><i class="fa fa-fw fa-code" aria-hidden="true"></i></a>
             <a class="controls" href="/sketches/{{ $id }}" target="_blank"><i class="fa fa-fw fa-external-link" aria-hidden="true"></i></a>
             <a class="controls" onclick="reload({{ print "p5-" $id }})"><i class="fa fa-fw fa-refresh" aria-hidden="true"></i></a>
-            <!--
-                <a class="controls" onclick="fullscreen({{ $id }})"><i class="fa fa-fw fa-arrows-alt" aria-hidden="true"></i></a>
-            -->
+            <a class="controls" onclick="fullscreen({{ print "p5-" $id }})"><i class="fa fa-fw fa-arrows-alt" aria-hidden="true"></i></a>
         </div>
     </div>
     <div class="sketch-container">
-        <iframe id="{{ print "p5-" $id }}" class="sketch-iframe" sandbox="allow-scripts allow-same-origin" srcdoc="{{ .Inner | safeHTMLAttr }}" onload="resize(this)" scrolling="no" frameborder="0"></iframe>
+        <iframe id="{{ print "p5-" $id }}" class="sketch-iframe p5-iframe" sandbox="allow-scripts allow-same-origin" srcdoc="{{ .Inner | safeHTMLAttr }}" onload="resize(this)" scrolling="no" frameborder="0"></iframe>
     </div>
 </div>

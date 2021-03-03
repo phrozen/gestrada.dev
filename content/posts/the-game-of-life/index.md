@@ -190,9 +190,9 @@ function step() {
 The code is weirdly formatted on purpose for readability. As said before, we iterate over each cell and for each one, we count the number of live neighbours it has (that is why `at(i)` returns 0 or 1) by iterating over our `offset` array defined above. After that we follow Conway's rules to determine what the status of that cell will be towards the next generation. This could be simplified a bit further between the first and second checks (over and under population), but I think it's a bit more explicit what is happening this way. Finally we swap our current generation (`state`) with the next generation. Let's give it a try, shall we?
 
 {{<sketch "Simple Life" >}}
-  {{<sketch-frame>}}
-    {{<sketch-file simple-life.js>}}
-  {{</sketch-frame>}}
+  {{<p5js-embed pixelated>}}
+    {{<p5js-file simple-life.js>}}
+  {{</p5js-embed>}}
 {{</sketch>}}
 
 Great! 😁 The initial state is randomly seeded with 25% live cells, and then we let the game follow it's course. But there is no fun in just watching it a single time, so you can click on {{<fa refresh accent>}} or anywhere on the canvas to re-seed the state and restart the game. This usually runs much faster, specially for the canvas size we picked as it's very small, but I used `frameRate(10)` in our setup so that each step in time could be appreciated. You can click on {{<fa code accent>}} on the sketch toolbar to check the code in Github. If you try this code in the [p5.js web editor](https://editor.p5js.org/), you will notice that the sketch is really small, exactly the way we defined it in the `setup` with `createCanvas(180, 120)`, as we are actually using pixels! Your first impulse would be to change the size and make the canvas bigger, but that will not scale the pixels, you are just going to have a lot more cells to deal with. That is why most people implement _The Game of Life_ by drawing squares or so, but the trick here, is that the browser already has the ability to scale the `canvas` element regardless of it's size! So while embedding sketches in my blog I'm using...
@@ -200,8 +200,7 @@ Great! 😁 The initial state is randomly seeded with 25% live cells, and then w
 ```css
 main, .p5Canvas {
     width: 100% !important;
-    height: auto !important;
-    max-width: 860px;
+    height: 100% !important;
     display: block;
     image-rendering: pixelated;
 }
@@ -253,9 +252,9 @@ function cell(i, x, y) {
 That is all, let's quickly review what is happening, first we `clear()` the canvas and fill it with black `background(0)` as we are only going to be drawing live cells (way more efficient). Next we proceed as usual, but check for live cells only `state[i] == live` (for readability as `state[i]` is already a boolean). Now the magic happens, we need to scale both `x` and `y` back to screen coordinates by multiplying them by the resolution, and in `cell(i, x, y)` we set the `fill(color)` with a neat trick by interpolating `i` into the hue [0, 360) of an `HSL` color! And finally we draw our cell as a colored `circle(x, y, radius)` with an offset to center it. Let's see it in action! 😎
 
 {{<sketch "Colorful Life">}}
-  {{<sketch-frame>}}
-    {{<sketch-file colorful-life.js>}}
-  {{</sketch-frame>}}
+  {{<p5js-embed>}}
+    {{<p5js-file colorful-life.js>}}
+  {{</p5js-embed>}}
 {{</sketch>}}
 
 Bravo! I separated `cell` into a new function to add a bit more fun to *The Game of Life*, now instead of re-seeding randomly by clicking on the canvas, it actually seeds new cells manually! Try it, just press the mouse button and draw some live cells directly to the current generation while it remains `paused`. Now it's way more fun to play with it. To achieve this, we simply modify `draw()` like this:
