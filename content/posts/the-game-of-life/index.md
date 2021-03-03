@@ -1,19 +1,19 @@
 ---
 date: 2021-02-18
 title: The Game of Life
-description: Hello blog! Introduction to p5.js and cellular automata with Conway's Game of Life
+description: Hello blog! Introduction to p5.js and cellular automata with Conway's Game of Life.
 author: Guillermo Estrada
 slug: the-game-of-life
 images:
-- "https://images.unsplash.com/photo-1530328411047-7063dbd29029?crop=entropy&cs=srgb&fm=jpg&ixid=MXwyMTAzMTZ8MHwxfGFsbHx8fHx8fHx8&ixlib=rb-1.2.1&q=80&fit=crop&w=1200h=627"
+  - https://images.unsplash.com/photo-1530328411047-7063dbd29029?crop=entropy&cs=srgb&fm=jpg&ixid=MXwyMTAzMTZ8MHwxfGFsbHx8fHx8fHx8&ixlib=rb-1.2.1&q=80&fit=crop&w=1200h=627
 tags:
-    - p5.js
-    - generative art
-    - automaton
+  - p5.js
+  - generative art
+  - automaton
 categories:
-    - p5.js
+  - p5.js
 series:
-    - Game of Life
+  - Game of Life
 ---
 
 {{<cover KJMz5Tmbw0k>}}
