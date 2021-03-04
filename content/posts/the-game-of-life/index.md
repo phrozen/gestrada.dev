@@ -10,6 +10,7 @@ tags:
   - p5.js
   - generative art
   - automaton
+  - game of life
 categories:
   - p5.js
 series:
@@ -189,7 +190,7 @@ function step() {
 
 The code is weirdly formatted on purpose for readability. As said before, we iterate over each cell and for each one, we count the number of live neighbours it has (that is why `at(i)` returns 0 or 1) by iterating over our `offset` array defined above. After that we follow Conway's rules to determine what the status of that cell will be towards the next generation. This could be simplified a bit further between the first and second checks (over and under population), but I think it's a bit more explicit what is happening this way. Finally we swap our current generation (`state`) with the next generation. Let's give it a try, shall we?
 
-{{<sketch "Simple Life" >}}
+{{<sketch title="Simple Life" src="simple-life.js">}}
   {{<p5js-embed pixelated>}}
     {{<p5js-file simple-life.js>}}
   {{</p5js-embed>}}
@@ -251,7 +252,7 @@ function cell(i, x, y) {
 
 That is all, let's quickly review what is happening, first we `clear()` the canvas and fill it with black `background(0)` as we are only going to be drawing live cells (way more efficient). Next we proceed as usual, but check for live cells only `state[i] == live` (for readability as `state[i]` is already a boolean). Now the magic happens, we need to scale both `x` and `y` back to screen coordinates by multiplying them by the resolution, and in `cell(i, x, y)` we set the `fill(color)` with a neat trick by interpolating `i` into the hue [0, 360) of an `HSL` color! And finally we draw our cell as a colored `circle(x, y, radius)` with an offset to center it. Let's see it in action! 😎
 
-{{<sketch "Colorful Life">}}
+{{<sketch title="Colorful Life" src="colorful-life.js">}}
   {{<p5js-embed>}}
     {{<p5js-file colorful-life.js>}}
   {{</p5js-embed>}}
