@@ -10,7 +10,7 @@ import { data as posts } from './posts/posts.data.ts'
 <div class="post-grid">
   <a v-for="post in posts" :key="post.url" :href="post.url" class="post-card">
     <div class="post-image-container">
-      <img :src="post.url.replace(/\.html$/, '') + 'hero.webp'" :alt="post.title" class="post-image" />
+      <img :src="post.image || '/covers/default.webp'" :alt="post.title" class="post-image" />
     </div>
     <div class="post-content">
       <h3 class="post-title">{{ post.title }}</h3>

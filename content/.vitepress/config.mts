@@ -20,7 +20,7 @@ export default defineConfig({
             ['meta', { property: 'og:title', content: pageData.frontmatter.title || title }],
             ['meta', { property: 'og:description', content: pageData.frontmatter.description || description }],
             ['meta', { property: 'og:url', content: `https://gestrada.dev/${pageData.relativePath.replace(/((^|\/)index)?\.md$/, '$2')}` }],
-            ['meta', { property: 'og:image', content: pageData.frontmatter.image || `./hero.webp` }]
+            ['meta', { property: 'og:image', content: `https://gestrada.dev${pageData.frontmatter.image || '/covers/default.webp'}` }]
         ]
     },
     themeConfig: {
