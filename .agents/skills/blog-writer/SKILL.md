@@ -22,7 +22,7 @@ Every post must follow this logical structure:
 1. **Hero Image AI Prompt**
    - Provide a detailed image generation prompt designed for Gen AI (like Midjourney or DALL-E) to create a hero image for the post.
    - **Important**: You must ALWAYS wrap this text prompt in an **HTML comment block** `<!-- ... -->`.
-   - Immediately after the HTML comment, include the markdown image placeholder using an absolute path relative to the VitePress `public/covers` directory. For example: `![Topic Hero Image](/covers/the-topic-name.webp)`.
+   - Immediately after the HTML comment, include the markdown image placeholder. You MUST always use the explicit relative path `./cover.webp` because this exact name is whitelisted in Vite configurations. For example: `![Topic Hero Image](./cover.webp)`.
 
 2. **TLDR / Introduction**
    - A quick hook explaining what the post is about.
@@ -52,6 +52,6 @@ Every post must follow this logical structure:
    - A brief wrap-up, potential use cases, and encouraging closing thoughts.
 
 ## Rules
-- **Frontmatter**: Every post must include `title`, `description`, `tags` (as a YAML list), `image` (e.g., `/covers/the-topic-name.webp`), and `lastUpdated` (YYYY-MM-DD format). Do not include publish dates or date-based organization.
-- **Asset Co-location**: Assume all code snippet assets (wasm, Go code, JS code) are in the same folder as the `index.md` file. Hero Images MUST go in `content/public/covers/` to ensure Open Graph SEO tags work correctly with absolute URLs!
+- **Frontmatter**: Every post must include `title`, `description`, `tags` (as a YAML list), and `lastUpdated` (YYYY-MM-DD format). Do not include publish dates or date-based organization. (Note: Do NOT include an `image` frontmatter field - the system automatically infers `cover.webp`).
+- **Asset Co-location**: Assume all image (`cover.webp`) and code snippet assets (wasm, Go code, JS code) are in the exactly same folder as the `index.md` file. Use relative paths!
 - **Audience & Perspective**: Write from the perspective of a seasoned, 15+ years of experience Senior Software Engineer. The target audience consists of peers, colleagues, or computer science students who are competent with code but simply unfamiliar with the specific algorithm or approach being discussed. Speak to them as equals.

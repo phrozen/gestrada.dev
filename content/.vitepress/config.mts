@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import Icons from 'unplugin-icons/vite'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 const title = "gestrada.dev"
 const description = "Thoughts on Computer Science, Clever Algorithms, System Design and Generative Art."
@@ -15,12 +16,13 @@ export default defineConfig({
         hostname: 'https://gestrada.dev'
     },
     async transformHead({ pageData }) {
+        const routePath = pageData.relativePath.replace(/((^|\/)index)?\.md$/, '$2')
         return [
             ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
             ['meta', { property: 'og:title', content: pageData.frontmatter.title || title }],
             ['meta', { property: 'og:description', content: pageData.frontmatter.description || description }],
-            ['meta', { property: 'og:url', content: `https://gestrada.dev/${pageData.relativePath.replace(/((^|\/)index)?\.md$/, '$2')}` }],
-            ['meta', { property: 'og:image', content: `https://gestrada.dev${pageData.frontmatter.image || '/covers/default.webp'}` }]
+            ['meta', { property: 'og:url', content: `https://gestrada.dev/${routePath}` }],
+            ['meta', { property: 'og:image', content: `https://gestrada.dev/${routePath}cover.webp` }]
         ]
     },
     themeConfig: {
@@ -48,6 +50,15 @@ export default defineConfig({
         plugins: [
             Icons({
                 compiler: 'vue3'
+            }),
+            viteStaticCopy({
+                structured: true,
+                targets: [
+                    {
+                        src: 'posts/**/*.{webp,js,go,wasm}',
+                        dest: './'
+                    }
+                ]
             })
         ]
     }
