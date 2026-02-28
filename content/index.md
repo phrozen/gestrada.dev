@@ -25,10 +25,9 @@ import { data as posts } from './posts/posts.data.ts'
 <style>
 .post-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
-  margin-top: 2rem;
-  padding: 0 1rem;
+  margin-top: 1rem;
 }
 
 .post-card {
