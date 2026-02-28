@@ -94,7 +94,7 @@ Let's grow the canvas, add some color by mapping the 1D `index` to the HSL hue s
 
 <<< @/posts/the-game-of-life/colorful-life.js#draw
 
-There are a little more changes in the code during the setup, but nothing too fancy. Just some extra variables and changes to handle the new features like resolution and scaling to draw the cells as circles instead. The result is a clear winner :trophy:!
+There are a little more changes in the code during the setup, but nothing too fancy. Just some extra variables and changes to handle the new features like resolution and scaling to draw the cells as circles instead. The result? A clear winner :trophy:
 
 <Sketch 
   title="Colorful Life" 
@@ -106,6 +106,6 @@ There are a little more changes in the code during the setup, but nothing too fa
 
 Now we're talking! Try clicking and dragging your mouse across the paused cells above to "paint" new life structures dynamically and watch them explode. 
 
-Experimenting with simple rules that result in infinite complexity is incredibly satisfying. I really enjoyed writing _Life_ and I will definitively keep doing these visual algorithms! In a future post, I might even try pushing this algorithm into WebAssembly with Go to see how many millions of cells we can crank at 60FPS. 
+Experimenting with simple rules that result in infinite complexity is incredibly satisfying. I really enjoyed writing _Life_ and I will definitely keep doing these visual algorithms! In a future post, I might even try pushing this algorithm into WebAssembly with Go to see how many millions of cells we can crank at 60FPS. 
 
 ¡Hasta la próxima!
