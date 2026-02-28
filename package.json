@@ -1,0 +1,21 @@
+{
+  "name": "gestrada.dev",
+  "module": "index.ts",
+  "devDependencies": {
+    "@iconify-json/tabler": "^1.2.27",
+    "@types/bun": "latest",
+    "p5": "^1.9.0",
+    "unplugin-icons": "^23.0.1",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.29"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "dev": "vitepress dev content",
+    "build": "vitepress build content",
+    "preview": "vitepress preview content"
+  },
+  "type": "module"
+}

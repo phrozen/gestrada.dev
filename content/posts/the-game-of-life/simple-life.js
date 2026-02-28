@@ -1,3 +1,4 @@
+// #region setup
 let size;               // width * height (DRY)
 let state, next;        // current and next generation
 let percentage = 25;    // ~% of live cells to seed
@@ -23,16 +24,20 @@ function setup() {
     ];
     seed();
 }
+// #endregion setup
 
+// #region draw
 // Main rendering loop
 function draw() {
     for (let i = 0; i < size; i++) {
-        set(i % width, i / width, color(state[i]));
+        set(i % width, floor(i / width), color(state[i]));
     }
     updatePixels();
     step();
 }
+// #endregion draw
 
+// #region seed
 // Randomly seeds the state with live cells
 function seed() {
     state.fill(dead);
@@ -41,7 +46,9 @@ function seed() {
         state[floor(random(size))] = live;
     }
 }
+// #endregion seed
 
+// #region step
 // Creates the next generation of cells
 function step() {
     for (let i = 0; i < size; i++) {
@@ -49,23 +56,28 @@ function step() {
         for (let j of offset) {
             neighbours += at(i + j);
         }
-        if ((state[i] == live)      && (neighbours < 2))  next[i] = dead;     // under-population
-        else if ((state[i] == live) && (neighbours > 3))  next[i] = dead;     // over-population
+        if ((state[i] == live) && (neighbours < 2)) next[i] = dead;     // under-population
+        else if ((state[i] == live) && (neighbours > 3)) next[i] = dead;     // over-population
         else if ((state[i] == dead) && (neighbours == 3)) next[i] = live;     // reproduction
-        else                                              next[i] = state[i]; // stasis
+        else next[i] = state[i]; // stasis
     }
     let tmp = state;
     state = next;
     next = tmp;
 }
+// #endregion step
 
+// #region helper
 // Gets cell 'status' at a given index (1D)
 function at(i) {
-    if (i < 0)      i += size;
-    if (i >= size)  i -= size;
+    if (i < 0) i += size;
+    if (i >= size) i -= size;
     return state[i] == live ? 1 : 0;
 }
+// #endregion helper
 
 function mousePressed() {
-    seed();
+    if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
+        seed();
+    }
 }
