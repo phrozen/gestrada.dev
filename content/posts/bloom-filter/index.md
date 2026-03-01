@@ -110,6 +110,10 @@ Now, where this gets *experiential* — when I first implemented the filter, I t
 
 When I applied Kirsch-Mitzenmacher, the false positive rate dropped from 9.8% straight down to ~1.1%. And because we only call `.Write()` and `.Sum64()` *once* instead of `k` times, the performance skyrocketed. You can see this applied directly in the `Add` and `Contains` methods below.
 
+So we need **one** good 64-bit hash. Which one? If you look at the [xxHash benchmarks](https://xxhash.com/#benchmarks), the throughput hierarchy is pretty clear: XXH64 leads at 19.4 GB/s, Murmur3 at 3.9 GB/s, and FNV64 trails at 1.2 GB/s. And it's not just speed — the xxHash benchmark suite scores hash *quality* on a 1-10 scale. XXH64 and Murmur3 both score a perfect 10, while FNV64 gets a 5 with the note *"poor avalanche properties"*. Both xxHash and Murmur3 also have Go implementations with hand-tuned assembly for amd64 ([`cespare/xxhash`](https://github.com/cespare/xxhash) and [`twmb/murmur3`](https://github.com/twmb/murmur3)), so on paper, the choice should be obvious.
+
+But I defaulted to `hash/fnv` from Go's standard library anyway. Zero dependencies, ships with every Go installation, and for a Bloom filter — where you're hashing tiny 16-byte keys, not streaming gigabytes — the raw throughput gap shrinks considerably. We'll put all three head-to-head in the benchmarks later and see if that "poor quality" score actually matters in practice.
+
 ## Adding and Checking Data
 
 With Kirsch-Mitzenmacher cleanly handled, the actual `Add` and `Contains` logic becomes elementary bitwise math. 
