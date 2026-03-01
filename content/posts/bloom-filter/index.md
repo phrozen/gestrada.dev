@@ -197,32 +197,3 @@ Sometimes, all you need is a "Hmmm, Probably?".
 
 Arrivederci! :wave:
 
-<script setup>
-import IconBrandGithub from '~icons/tabler/brand-github'
-</script>
-
-<div class="source-link">
-  <a href="https://github.com/phrozen/gestrada.dev/tree/main/content/posts/bloom-filter/bloom.go" target="_blank" rel="noopener noreferrer">
-    <IconBrandGithub /> View source on GitHub
-  </a>
-</div>
-
-<style>
-.source-link {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--vp-c-divider);
-}
-.source-link a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--vp-c-text-2);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.2s;
-}
-.source-link a:hover {
-  color: var(--vp-c-brand-1);
-}
-</style>
