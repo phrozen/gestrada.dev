@@ -228,7 +228,7 @@ So what do you do when your data changes? A few strategies, each with real imple
 
 ## Recapitulation
 
-The standard library `FNV` hasher, a clean `uint64` bitset, and Kirsch-Mitzenmacher. That's it. 1M UUID keys inserted in ~49ms. Lookups in under 46ns. 125 million concurrent ops/second across 16 goroutines. All in 1.14 MB of memory. And all three hash functions we tested — FNV, xxHash, Murmur3 — hit within 0.02% of the target FPR. Hash quality is a non-factor.
+The standard library `FNV` hasher, a clean `uint64` bitset, and Kirsch-Mitzenmacher. That's it. 1M UUID keys inserted in ~49ms. Lookups in under 46ns. ~118 million concurrent adds/second and ~135 million mixed ops/second across 16 goroutines. All in 1.14 MB of memory. And all three hash functions we tested — FNV, xxHash, Murmur3 — hit within 0.02% of the target FPR. Hash quality is a non-factor.
 
 A simple, standard library hash function, allocated once, mapped cleanly across a `uint64` slice, evaluates millions of items in fractions of a millisecond. Sometimes simple wins.
 

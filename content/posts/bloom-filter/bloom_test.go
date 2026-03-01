@@ -270,6 +270,23 @@ func BenchmarkFilter_Contains1M(b *testing.B) {
 	}
 }
 
+// BenchmarkFilter_ConcurrentAdd measures pure concurrent Add throughput.
+// GOMAXPROCS goroutines all write to the same filter simultaneously.
+func BenchmarkFilter_ConcurrentAdd(b *testing.B) {
+	const numItems = 1_000_000
+	f := NewFilterFromProbability(numItems, 0.01)
+
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		buf := generateRandomBuffer(1_000_000)
+		i := 0
+		for pb.Next() {
+			f.Add(key(buf, i%1_000_000))
+			i++
+		}
+	})
+}
+
 // BenchmarkFilter_ConcurrentAddContains exercises the atomic.Uint64 design
 // under real contention. GOMAXPROCS goroutines do 50/50 Add/Contains on a
 // shared filter simultaneously using UUID-sized keys.
