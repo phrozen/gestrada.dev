@@ -42,6 +42,29 @@ Target reading time: ~15 min (10-20 acceptable). Use `##` (H2) headings for side
 4. **Interactive Element / Visuals** — Placeholders or Vue components for WASM/JS.
 5. **Recap & Conclusion** — Personal reflection ("I didn't expect..."), not moralizing ("It's an incredible lesson..."). Optionally tease next post. One-line multilingual sign-off (vary language + emoji across posts).
 
+## Citations & Sources
+
+- **Inline citations**: Cite sources for well-known math, algorithms, and security concepts. Wikipedia and seminal papers are fine — use markdown links inline on the relevant term (e.g., `[Bloom, 1970](url)`).
+- **Further Reading**: End every post with a `## Further Reading` section containing 5-8 curated links for readers who want to go deeper. Include original papers, interactive visualizations, and relevant industry blog posts.
+
+## Honest Framing
+
+- **Do not feign surprise** about well-documented properties or techniques. If something appears in every textbook, frame it as applying known theory, not a personal "discovery."
+- **The "aha!" should be experiential**: Surprise comes from *seeing the numbers change*, not from *learning a concept exists*. "When I applied Kirsch-Mitzenmacher, the FPR dropped from 9.8% to 1.1%" is honest. "I discovered this legendary trick" is not.
+- **Known constraints are known**: If a data structure has a well-known limitation (e.g., Bloom filters can't delete), don't pretend you only noticed it in production. Acknowledge the literature, then show *why it matters more than you'd expect* through a concrete scenario.
+
+## Narrative Cohesion
+
+- **Weave, don't bolt on.** Real-world examples, security considerations, and production concerns should be woven into the discovery narrative at the point they're contextually relevant — not collected in standalone appendix-style sections at the end.
+- **Forward-reference early**: If a claim in the intro is proven by an example later, name-drop the example briefly in the intro ("This is exactly how Cassandra avoids billions of disk reads").
+- **Each concept appears once, where it fits best**: Don't separate "theory" from "practice" into distinct sections. When explaining the no-delete constraint, immediately show how Cassandra/crawlers solve it.
+
+## Micro-Benchmarking
+
+- **Benchmarking is a signature**. Embed benchmark results throughout the post after each major code section, not just as a single comparison at the end. Show insert throughput, lookup speed, concurrency behavior, FPR validation — each where it belongs in the narrative.
+- **Use Go's testing/benchmark framework** with `-benchmem` to report allocations. Always include `ns/op`, `B/op`, and `allocs/op`.
+- **Explain what the numbers reveal**, don't just dump tables. Each benchmark result should teach the reader something about the design.
+
 ## Anti-Patterns
 
 - ❌ "Imagine you..." openers
@@ -50,6 +73,9 @@ Target reading time: ~15 min (10-20 acceptable). Use `##` (H2) headings for side
 - ❌ Cinematic narrative transitions
 - ❌ Saving analogy reveals for the end
 - ❌ Generic emojis as punctuation
+- ❌ Feigning surprise about well-documented concepts
+- ❌ Bolt-on sections for real-world examples or security concerns
+- ❌ Benchmark dump without interpretation
 
 ## Code Formatting
 
