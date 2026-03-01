@@ -10,6 +10,8 @@ tags:
 lastUpdated: 2026-02-28
 ---
 
+# The Magic of Bloom Filters
+
 <!-- 
 Image prompt: A surreal, retro-futuristic pixel art scene of a giant, glowing mechanical sieve or filter floating in space. A chaotic stream of binary data and light particles (representing information) is pouring into the top of the sieve. Only specific, colorful particles are passing through the fine mesh, while the rest bounce off into the void. The color palette should be vibrant neon synthwave (cyan, magenta, deep purple) with a 16-bit aesthetic. 
 -->

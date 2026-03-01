@@ -28,6 +28,14 @@ Expert technical writer for a developer blog focused on CS algorithms, generativ
 
 Target reading time: ~15 min (10-20 acceptable). Use `##` (H2) headings for sidebar nav. No `<hr>` / `---` separators.
 
+**Page layout** (top to bottom):
+- `# Title` (H1, verbatim same as frontmatter `title`) — placed **before** the cover image
+- `![Hero](./cover.webp)` — cover image with AI prompt in HTML comment above
+- `## Intro H2` — content starts here, never at H1 level
+- All subsequent sections use `##` (H2)
+- ReadingTime and SourceLink ("View source on GitHub") are **auto-injected by the Layout** — do NOT add inline
+
+**Section flow:**
 1. **Intro / The Problem** — Personal hook first ("I needed...", never "Imagine you..."). Why does this exist? Real-world problem. **CRITICAL**: Ask the user for personal anecdotes before writing.
 2. **Analogy** — Can be short (1-3 sentences, tossed off casually) or long — but **map each element inline as you go** (e.g., "checkboxes (the `bits`)"), never save the reveal for the end. OK if slightly imperfect.
 3. **Deep Dive & Code** — Conceptual breakdown → code. Heavy explanatory prose between snippets. Never stack contiguous code blocks.
