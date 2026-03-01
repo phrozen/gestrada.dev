@@ -50,7 +50,7 @@ When you show up, he looks at those three specific boxes on his sheet. If **even
 
 But, if **all three boxes** are already checked, he lets you in. (This is the `Probably`). 
 
-Why "probably"? Well, the bouncer has been checking boxes for thousands of other people all night! Maybe Alice caused him to check box #42, Bob made him check #105, and Charlie caused #12. The boxes are checked, but *not because of you*. You just snuck in based on the overlapping checkmarks of three completely different people. That is a false positive. 
+Why "probably"? Well, the bouncer has been checking boxes for thousands of other people all night! Maybe Pedro caused him to check box #42, Miguel made him check #105, and Carlos caused #12 (yes, this is a latino bar). The boxes are checked, but *not because of you*. You just snuck in based on the overlapping checkmarks of three completely different people. That is a false positive. 
 
 By making the sheet of paper bigger (more bits) or giving him more formulas to calculate (more hashes), we can mathematically control exactly how often someone accidentally sneaks in.
 
