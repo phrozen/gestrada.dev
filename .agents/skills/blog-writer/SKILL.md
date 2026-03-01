@@ -30,9 +30,10 @@ Target reading time: ~15 min (10-20 acceptable). Use `##` (H2) headings for side
 
 **Page layout** (top to bottom):
 - `# Title` (H1, verbatim same as frontmatter `title`) — placed **before** the cover image
+- `*description*` (italicized, verbatim same as frontmatter `description`) — placed **before** the cover image
 - `![Hero](./cover.webp)` — cover image with AI prompt in HTML comment above
 - `## Intro H2` — content starts here, never at H1 level
-- All subsequent sections use `##` (H2)
+- All subsequent sections use `##` (H2) for navigation in the sidebar. (use `###` (H3) for sub-sections if needed sparingly)
 - ReadingTime and SourceLink ("View source on GitHub") are **auto-injected by the Layout** — do NOT add inline
 
 **Section flow:**

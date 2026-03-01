@@ -14,6 +14,8 @@ lastUpdated: 2026-02-27
 
 # The Game of Life
 
+*Introduction to p5.js and cellular automata with Conway's Game of Life.*
+
 <!-- 
 Image Prompt: A retro, pixelized cellular automaton grid coming to life. Glowing neon green and pink cells on a dark background, representing Conway's Game of Life. 8-bit aesthetic, digital art, generative computer science vibe.
 -->
