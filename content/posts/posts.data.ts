@@ -1,4 +1,5 @@
 import { createContentLoader } from 'vitepress'
+import readingTime from 'reading-time'
 
 interface Post {
     title: string
@@ -6,20 +7,21 @@ interface Post {
     description?: string
     tags?: string[]
     lastUpdated?: string
-    image?: string
+    readingTime?: string
 }
 
 declare const data: Post[]
 export { data }
 
 export default createContentLoader('posts/*/*.md', {
+    includeSrc: true,
     transform(raw): Post[] {
-        return raw.map(({ url, frontmatter }) => ({
+        return raw.map(({ url, frontmatter, src }) => ({
             title: frontmatter.title || 'Untitled',
             description: frontmatter.description || '',
             tags: frontmatter.tags || [],
             lastUpdated: frontmatter.lastUpdated || '',
-            image: frontmatter.image || '',
+            readingTime: src ? readingTime(src).text : '',
             url,
         })).sort((a, b) => {
             const dateA = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;

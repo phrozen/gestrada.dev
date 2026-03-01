@@ -1,10 +1,12 @@
 ---
-title: "The Magic of Bloom Filters (and why interface allocations crush benchmarks)"
+title: "The Magic of Bloom Filters"
 description: "A deep dive into Bloom Filters in Go. We build one from scratch, optimize it with Kirsch-Mitzenmacher, and discover why your choice of hash functions might not matter as much as you think."
 tags:
   - Go
   - Algorithms
+  - Data Structures
   - Performance
+  - Security
 lastUpdated: 2026-02-28
 ---
 
@@ -19,7 +21,7 @@ I recently needed a way to check if a key already existed in a dataset for a sid
 
 We need a way to answer this question *instantly*, in memory, without storing massive strings or allocating gigabytes.
 
-Enter the **Bloom Filter**.
+## Enter the Bloom Filter
 
 A Bloom filter is a simple, space-efficient probabilistic data structure. By "probabilistic", I mean it can't tell you exactly *what* is in a set, but it can answer the question *"Is this item in the set?"* with a very specific guarantee:
 
@@ -58,15 +60,19 @@ Let's build this in Go.
 
 First, we need the "sheet of checkboxes". The simplest way to represent a bit array in Go might seem to be a boolean slice `[]bool`, but that wastes an entire byte (8 bits) for a single True/False value! (eight times more memory than we need... ouch :weary:). We could use a byte slice `[]byte`, but for best performance on modern 64-bit architectures, we want to align our memory directly with the CPU word size. 
 
-We will use a slice of `uint64`. Fetching a 64-bit word from memory and masking a single bit is something modern CPUs can do almost instantaneously. 
+We will use a slice of `atomic.Uint64`. Fetching a 64-bit word from memory and masking a single bit is something modern CPUs can do almost instantaneously, and using atomics means we get concurrent safety for free — multiple goroutines can `Add` and `Contains` simultaneously without a mutex. 
 
 We also need to hold onto the size of our bitset (`m`), the number of hash functions we use (`k`), and the actual hashing function we want to invoke.
 
 <<< @/posts/bloom-filter/bloom.go#filter
 
-I love the functional option pattern in Go. It allows us to keep our APIs incredibly clean while remaining open for extension. Let's create an `Option` type and a specific `WithHashFunc` modifier so users can swap out the hash function if they want to.
+I love the functional option pattern in Go. It allows us to keep our APIs incredibly clean while remaining open for extension.
 
 <<< @/posts/bloom-filter/bloom.go#hashfunc
+
+Let's create an `Option` type and a specific `WithHashFunc` modifier so users can swap out the hash function if they want to.
+
+<<< @/posts/bloom-filter/bloom.go#options
 
 Notice that we use `hash.Hash64` from the standard library. By programming against an interface rather than a concrete struct, we leave the door open for consumers to inject high-performance hashers like `Murmur3` or `xxHash` later. (Keep this in mind, because it completely bites us in the benchmarks later on :thinking:).
 
@@ -100,27 +106,25 @@ I did some digging and discovered the legendary **Kirsch-Mitzenmacher optimizati
 
 This brilliant trick (published in 2006) proves you only need to hash the data *once* using a strong 64-bit hasher. You then split that 64-bit result cleanly down the middle into two 32-bit halves (let's call them `h1` and `h2`). 
 
-You can then mathematically simulate an infinite number of totally independent hashes using a simple formula: `hash_i = h1 + i * h2`
+You can then mathematically simulate an infinite number of totally independent hashes using a simple formula: `hash_i = h1 + i * h2`. That's it. No extra imports, no expensive re-hashing.
 
-<<< @/posts/bloom-filter/bloom.go#hash
-
-It's magical. My false positive rate instantly plummeted from 9.8% down to exactly 1.1%. And because we only call `.Write()` and `.Sum64()` *once* instead of `k` times, the performance skyrocketed.
+It's magical. My false positive rate instantly plummeted from 9.8% down to exactly 1.1%. And because we only call `.Write()` and `.Sum64()` *once* instead of `k` times, the performance skyrocketed. You can see this applied directly in the `Add` and `Contains` methods below.
 
 ## Adding and Checking Data
 
 With the Kirsch-Mitzenmacher hash generation cleanly handled, the actual `Add` and `Contains` logic becomes elementary bitwise math. 
 
-When we `Add`, we iterate `k` times. On each loop, we calculate the simulated hash, modulo it securely into our `m` boundary, and then figure out exactly which `uint64` word and bit offset that index lives in. 
+When we `Add`, we allocate a fresh hasher, hash the data **once**, split the 64-bit result into two 32-bit halves right there, and then iterate `k` times. On each loop, we simulate the next hash via `h1 + i*h2`, modulo it into our `m` boundary, and flip the bit. We use `atomic.Uint64.Or()` to set bits and `atomic.Uint64.Load()` to read them, making the entire filter **safe for concurrent use** without a mutex.
 
 <<< @/posts/bloom-filter/bloom.go#add
 
-We allocate the hasher once, grab the word index (`bitIdx / 64`) and offset (`bitIdx % 64`), and use Bitwise OR (`|`) to flip the bit to 1 without touching its neighbors.
+We divide the bit index by 64 to find the right word, modulo by 64 to find the bit within that word, and atomically OR (`|`) it to 1 without touching its neighbors. Clean, compact, and lock-free.
 
 Checking if data exists (`Contains`) is the exact same logic in reverse.
 
 <<< @/posts/bloom-filter/bloom.go#contains
 
-Instead of flipping the bit, we use Bitwise AND (`&`) with a bitshift. If the result is exactly `0`, we definitively know that bit was never flipped. We short-circuit and return `false` instantly!
+Instead of setting the bit, we atomically load the word and use Bitwise AND (`&`) to isolate the bit. If the result is `0`, that bit was never set — we short-circuit and return `false` instantly!
 
 ## The Interface Allocation Plot Twist
 
@@ -130,20 +134,22 @@ I imported them, hooked them into the `WithHashFunc` option, and ran the benchma
 
 I fully expected `xxHash` to crush `FNV`. I was ready to make `xxHash` the default.
 
-Here is what `go test -bench=.` actually spit out:
+Here is what `go test -bench=. -benchmem` actually spit out:
 
 ```text
-BenchmarkFilter_Add_FNV-16             	14932170	        80.40 ns/op
-BenchmarkFilter_Add_xxHash-16          	12005582	       137.3 ns/op
-BenchmarkFilter_Add_Murmur3-16         	 6340189	       223.6 ns/op
+BenchmarkFilter_Add_FNV-16             	41334127	        30.84 ns/op	   8 B/op	  1 allocs/op
+BenchmarkFilter_Add_xxHash-16          	31900555	        40.83 ns/op	  80 B/op	  1 allocs/op
+BenchmarkFilter_Add_Murmur3-16         	20587674	        56.11 ns/op	  96 B/op	  1 allocs/op
 ```
 
 Wait. `FNV` won? By a *landslide*?! :thinking:
 
-How is that even possible? The answer comes down to two things:
+How is that even possible? The `-benchmem` output makes it obvious. Look at the `B/op` column: `FNV` allocates **8 bytes** per operation. `xxHash` allocates **80 bytes**. `Murmur3` allocates **96 bytes**. They all show `1 allocs/op` — a single allocation per call — but the *size* of that allocation is wildly different. The answer comes down to two things:
 
 1. **The Interface Allocation Penalty**: Remember our `HashFunc` type (`HashFunc func() hash.Hash64`)? It returns a standard library interface. Because it returns an interface rather than a concrete struct, the Go compiler can't prove where the struct memory lives or how large it will be. This means an expensive heap allocation *every single time* we call `f.hasher()` inside `Add` or `Contains`. `FNV` creates a tiny struct wrapper. `Murmur3` and `xxHash` create much heavier wrappers just to satisfy the interface. (So the "flexibility" of our interface design is literally costing us performance... ironic, right? :sweat_smile:)
 2. **Setup Overhead**: We are hashing tiny, 8-byte slices in these benchmarks. `xxHash` and `Murmur3` are fast at hashing large files because they pipeline big blocks of memory through CPU registers. But for a tiny 8-byte payload? The setup and teardown take longer than the actual hashing! `FNV` is basically just a tiny `for` loop (`hash ^= byte; hash *= prime`). It finishes the race before `xxHash` even finishes tying its shoes.
+
+Now, to be fair — `xxHash` and `Murmur3` aren't just about raw speed. They are designed to produce **high-quality, low-collision hashes** with excellent distribution properties. For a Bloom filter operating on millions of unique keys, hash distribution matters a lot — poor distribution means more bit collisions, which means higher false positive rates. If your payloads are larger (URLs, file checksums, serialized objects), the quality advantage of `xxHash` or `Murmur3` might actually outweigh the allocation overhead and make them the better choice. But for tiny keys like the ones in my benchmark? `FNV` is more than good enough, and the speed difference isn't even close.
 
 ## The No-Delete Problem
 
@@ -171,6 +177,14 @@ And then there's the attack vector angle. Without a Bloom filter, an attacker ca
 
 With a Bloom filter sitting in front? Those millions of fake usernames get rejected *instantly* in memory. The filter says "No" definitively, and the request never touches your database. Let's put some numbers on it: at 1 billion items with 1% false positive rate, we need `m ≈ 9.58 billion bits` — that's roughly **1.12 GB** using our `uint64` bit-packed array. Compare that to a Hash Map storing a billion username strings — you'd easily need **10-30 GB** of RAM depending on string lengths. The Bloom filter gives you the same "does it exist?" answer at a fraction of the memory, and the attacker can't extract any data from it. For an attacker to even *reach* your database, they'd need to guess a username that produces a false positive — and that only happens 1% of the time. The other 99% of their attack traffic gets absorbed by a ~1 GB memory structure that contains zero actual user data.
 
+## Bloom Filters in the Wild
+
+Bloom filters aren't just an academic curiosity — they're everywhere in production systems, quietly saving billions of unnecessary I/O operations:
+
+- **Apache Cassandra** uses Bloom filters before checking SSTables on disk. When a read request comes in, Cassandra checks the Bloom filter for each SSTable first. If the filter says "No", it skips that entire SSTable without ever touching the disk. Considering a single node might have hundreds of SSTables, this saves an enormous amount of random disk I/O on every single read.
+- **Google Chrome's Safe Browsing** uses a local Bloom filter to check if a URL is potentially malicious. Instead of sending every single URL you visit to Google's servers (which would be a privacy nightmare), Chrome checks a local Bloom filter first. Only if the filter says "Probably" does it make a network request to verify. Most of your browsing never leaves your machine.
+- **CDNs like Akamai** use Bloom filters to decide whether to cache content. They don't cache an object on the first request — instead, a Bloom filter tracks which URLs have been requested at least once. Only on the *second* request (when the filter confirms it's seen this URL before) does the CDN actually cache the content. This prevents "one-hit wonders" from polluting the cache. (That's actually really clever :astonished:)
+
 ## Recapitulation
 
 I honestly didn't expect `FNV` to win. That benchmark humbled me. I had imported `xxHash` fully expecting it to be the obvious default, and the standard library function I almost ignored turned out to be the fastest option for my use case. It's a good reminder that reaching for the "fastest" external library doesn't help much when your specific data pipeline (tiny payloads) and your structural choices (interfaces causing heap allocations) work against it.
@@ -182,3 +196,33 @@ Bloom filters are a really fun data structure. The next time you're sketching an
 Sometimes, all you need is a "Hmmm, Probably?".
 
 Arrivederci! :wave:
+
+<script setup>
+import IconBrandGithub from '~icons/tabler/brand-github'
+</script>
+
+<div class="source-link">
+  <a href="https://github.com/phrozen/gestrada.dev/tree/main/content/posts/bloom-filter/bloom.go" target="_blank" rel="noopener noreferrer">
+    <IconBrandGithub /> View source on GitHub
+  </a>
+</div>
+
+<style>
+.source-link {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.source-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.source-link a:hover {
+  color: var(--vp-c-brand-1);
+}
+</style>

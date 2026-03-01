@@ -15,8 +15,11 @@ import { data as posts } from './posts/posts.data.ts'
     <div class="post-content">
       <h3 class="post-title">{{ post.title }}</h3>
       <p v-if="post.description" class="post-desc">{{ post.description }}</p>
-      <div v-if="post.tags && post.tags.length" class="post-tags">
-        <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+      <div class="post-meta">
+        <span v-if="post.readingTime" class="reading-time">{{ post.readingTime }}</span>
+        <div v-if="post.tags && post.tags.length" class="post-tags">
+          <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
+        </div>
       </div>
     </div>
   </a>
@@ -95,11 +98,23 @@ import { data as posts } from './posts/posts.data.ts'
   flex-grow: 1;
 }
 
+.post-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.reading-time {
+  font-size: 0.8rem;
+  color: var(--vp-c-text-3);
+  font-style: italic;
+}
+
 .post-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: auto;
 }
 
 .tag {

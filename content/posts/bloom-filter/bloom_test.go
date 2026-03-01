@@ -78,14 +78,14 @@ func TestFilter_CustomHasher(t *testing.T) {
 func TestFilter_FalsePositiveRate(t *testing.T) {
 	// Let's test the probability math
 	// We want to store 10,000 items with a 1% false positive rate
-	n := uint(10000)
+	n := 10000
 	p := 0.01
 
 	f := NewFilterFromProbability(n, p)
 
 	// 1. Add 10,000 random items
 	addedItems := make([][]byte, n)
-	for i := uint(0); i < n; i++ {
+	for i := range n {
 		b := make([]byte, 16)
 		rand.Read(b)
 		addedItems[i] = b
@@ -102,7 +102,7 @@ func TestFilter_FalsePositiveRate(t *testing.T) {
 	// 3. Check 10,000 items we NEVER added, and count the false positives
 	falsePositives := 0
 	tests := 10000
-	for i := 0; i < tests; i++ {
+	for range tests {
 		b := make([]byte, 16)
 		rand.Read(b)
 
@@ -149,7 +149,7 @@ func ExampleNewFilterFromProbability() {
 // generateRandomData creates a slice of n words, each 8 bytes long
 func generateRandomData(n int) [][]byte {
 	data := make([][]byte, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		data[i] = make([]byte, 8)
 		rand.Read(data[i])
 	}
@@ -161,7 +161,7 @@ func BenchmarkFilter_Add_FNV(b *testing.B) {
 	data := generateRandomData(b.N)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		f.Add(data[i])
 	}
 }
@@ -171,7 +171,7 @@ func BenchmarkFilter_Add_xxHash(b *testing.B) {
 	data := generateRandomData(b.N)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		f.Add(data[i])
 	}
 }
@@ -181,7 +181,7 @@ func BenchmarkFilter_Add_Murmur3(b *testing.B) {
 	data := generateRandomData(b.N)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		f.Add(data[i])
 	}
 }
@@ -211,7 +211,7 @@ func benchmarkContains(b *testing.B, f *Filter) {
 	testData := generateRandomData(b.N)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		f.Contains(testData[i])
 	}
 }

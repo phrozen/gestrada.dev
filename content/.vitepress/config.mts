@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitepress'
 import Icons from 'unplugin-icons/vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import readingTime from 'reading-time'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 const title = "gestrada.dev"
 const description = "Thoughts on Computer Science, Clever Algorithms, System Design and Generative Art."
@@ -14,6 +17,13 @@ export default defineConfig({
     cleanUrls: true,
     sitemap: {
         hostname: 'https://gestrada.dev'
+    },
+    transformPageData(pageData, { siteConfig }) {
+        if (pageData.relativePath.startsWith('posts/')) {
+            const filePath = resolve(siteConfig.srcDir, pageData.relativePath)
+            const content = readFileSync(filePath, 'utf-8')
+            pageData.frontmatter.readingTime = readingTime(content).text
+        }
     },
     async transformHead({ pageData }) {
         const routePath = pageData.relativePath.replace(/((^|\/)index)?\.md$/, '$2')

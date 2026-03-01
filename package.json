@@ -5,6 +5,7 @@
     "@iconify-json/tabler": "^1.2.27",
     "@types/bun": "latest",
     "p5": "^1.9.0",
+    "reading-time": "^1.5.0",
     "unplugin-icons": "^23.0.1",
     "vite-plugin-static-copy": "^3.2.0",
     "vitepress": "^1.6.4",
