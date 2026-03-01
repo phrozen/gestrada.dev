@@ -15,8 +15,7 @@ lastUpdated: 2026-02-27
 # The Game of Life
 
 <!-- 
-Hero Image AI Prompt:
-"A retro, pixelized cellular automaton grid coming to life. Glowing neon green and pink cells on a dark background, representing Conway's Game of Life. 8-bit aesthetic, digital art, generative computer science vibe."
+Image Prompt: A retro, pixelized cellular automaton grid coming to life. Glowing neon green and pink cells on a dark background, representing Conway's Game of Life. 8-bit aesthetic, digital art, generative computer science vibe.
 -->
 ![Conway's Game of Life Hero Image](./cover.webp)
 
