@@ -9,6 +9,7 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/twmb/murmur3"
+	"github.com/zeebo/xxh3"
 )
 
 func TestFilter_AddAndContains(t *testing.T) {
@@ -196,6 +197,16 @@ func BenchmarkFilter_Add_Murmur3(b *testing.B) {
 	}
 }
 
+func BenchmarkFilter_Add_XXH3(b *testing.B) {
+	f := NewFilter(1000000, 7, WithHashFunc(func() hash.Hash64 { return xxh3.New() }))
+	buf := generateRandomBuffer(b.N)
+
+	b.ResetTimer()
+	for i := range b.N {
+		f.Add(key(buf, i))
+	}
+}
+
 func BenchmarkFilter_Contains_FNV(b *testing.B) {
 	f := NewFilter(1000000, 7)
 	benchmarkContains(b, f)
@@ -208,6 +219,11 @@ func BenchmarkFilter_Contains_xxHash(b *testing.B) {
 
 func BenchmarkFilter_Contains_Murmur3(b *testing.B) {
 	f := NewFilter(1000000, 7, WithHashFunc(func() hash.Hash64 { return murmur3.New64() }))
+	benchmarkContains(b, f)
+}
+
+func BenchmarkFilter_Contains_XXH3(b *testing.B) {
+	f := NewFilter(1000000, 7, WithHashFunc(func() hash.Hash64 { return xxh3.New() }))
 	benchmarkContains(b, f)
 }
 
@@ -335,6 +351,7 @@ func TestFilter_FalsePositiveRate1M(t *testing.T) {
 		{"FNV", fnv.New64a},
 		{"xxHash", func() hash.Hash64 { return xxhash.New() }},
 		{"Murmur3", func() hash.Hash64 { return murmur3.New64() }},
+		{"XXH3", func() hash.Hash64 { return xxh3.New() }},
 	}
 
 	// Generate data once, reuse across all hashers for fair comparison

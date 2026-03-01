@@ -110,9 +110,9 @@ Now, where this gets *experiential* — when I first implemented the filter, I t
 
 When I applied Kirsch-Mitzenmacher, the false positive rate dropped from 9.8% straight down to ~1.1%. And because we only call `.Write()` and `.Sum64()` *once* instead of `k` times, the performance skyrocketed. You can see this applied directly in the `Add` and `Contains` methods below.
 
-So we need **one** good 64-bit hash. Which one? If you look at the [xxHash benchmarks](https://xxhash.com/#benchmarks), the throughput hierarchy is pretty clear: XXH64 leads at 19.4 GB/s, Murmur3 at 3.9 GB/s, and FNV64 trails at 1.2 GB/s. And it's not just speed — the xxHash benchmark suite scores hash *quality* on a 1-10 scale. XXH64 and Murmur3 both score a perfect 10, while FNV64 gets a 5 with the note *"poor avalanche properties"*. Both xxHash and Murmur3 also have Go implementations with hand-tuned assembly for amd64 ([`cespare/xxhash`](https://github.com/cespare/xxhash) and [`twmb/murmur3`](https://github.com/twmb/murmur3)), so on paper, the choice should be obvious.
+So we need **one** good 64-bit hash. Which one? If you look at the [xxHash benchmarks](https://xxhash.com/#benchmarks), the throughput hierarchy is pretty clear: XXH3 tops everything at 31.5 GB/s, XXH64 follows at 19.4 GB/s, Murmur3 at 3.9 GB/s, and FNV64 trails at 1.2 GB/s. And it's not just speed — the xxHash benchmark suite scores hash *quality* on a 1-10 scale. XXH3, XXH64, and Murmur3 all score a perfect 10, while FNV64 gets a 5 with the note *"poor avalanche properties"*. All three challengers have Go implementations with hand-tuned assembly for amd64 ([`zeebo/xxh3`](https://github.com/zeebo/xxh3), [`cespare/xxhash`](https://github.com/cespare/xxhash), and [`twmb/murmur3`](https://github.com/twmb/murmur3)), so on paper, the choice should be obvious.
 
-But I defaulted to `hash/fnv` from Go's standard library anyway. Zero dependencies, ships with every Go installation, and for a Bloom filter — where you're hashing tiny 16-byte keys, not streaming gigabytes — the raw throughput gap shrinks considerably. We'll put all three head-to-head in the benchmarks later and see if that "poor quality" score actually matters in practice.
+But I defaulted to `hash/fnv` from Go's standard library anyway :sweat_smile:. Zero dependencies, ships with every Go installation, and for a Bloom filter — where you're hashing tiny 16-byte keys, not streaming gigabytes — the raw throughput gap shrinks considerably. We'll put all four head-to-head in the benchmarks later and see if that "poor quality" score actually matters in practice.
 
 ## Adding and Checking Data
 
@@ -161,61 +161,69 @@ BenchmarkFilter_Contains1M-16    76990525    45.81 ns/op    8 B/op    1 allocs/o
 Here's where the `atomic.Uint64` design pays off. I spun up `GOMAXPROCS` goroutines (16 on my machine) doing a 50/50 mix of `Add` and `Contains` on a shared filter with 500K items already in it:
 
 ```text
-BenchmarkFilter_ConcurrentAddContains-16    462215013    7.964 ns/op    8 B/op    1 allocs/op
+BenchmarkFilter_ConcurrentAddContains-16    459578769    7.401 ns/op    8 B/op    1 allocs/op
 ```
 
-**7.96 ns/op** under full contention across 16 goroutines. That's over **125 million concurrent operations per second**. No mutexes, no lock contention, no degradation. The `atomic.Uint64` bet paid off big time. This is exactly the behavior you want when hundreds of goroutines are hammering the filter in production.
+**7.4 ns/op** under full contention across 16 goroutines. That's over **135 million concurrent operations per second**. No mutexes, no lock contention, no degradation. The `atomic.Uint64` bet paid off big time. This is exactly the behavior you want when hundreds of goroutines are hammering the filter in production.
 
 ### Does the Math Actually Hold Up?
 
-All these benchmarks are great, but the whole point of the filter is the false positive rate. Does our 1% target actually work at scale? And here's the fun question — does the *quality* of the hash function matter? I inserted 1M UUID-sized keys, then queried 1M keys that were *never* inserted, using **all three hash functions** on the exact same data:
+All these benchmarks are great, but the whole point of the filter is the false positive rate. Does our 1% target actually work at scale? And here's the fun question — does the *quality* of the hash function matter? I inserted 1M UUID-sized keys, then queried 1M keys that were *never* inserted, using **all four hash functions** on the exact same data:
 
 ```text
+Filter size (m): 9585059 bits (1.14 MB)
+Hash functions (k): 7
+
 === FPR Validation [FNV] (1M items) ===
-  Filter size (m): 9585059 bits (1.14 MB)
-  Hash functions (k): 7
-  False positives: 9962
+  False positives: 9893
   Target FPR: 1.0000%
-  Actual FPR: 0.9962%
+  Actual FPR: 0.9893%
 
 === FPR Validation [xxHash] (1M items) ===
-  False positives: 10158
+  False positives: 10003
   Target FPR: 1.0000%
-  Actual FPR: 1.0158%
+  Actual FPR: 1.0003%
 
 === FPR Validation [Murmur3] (1M items) ===
-  False positives: 10075
+  False positives: 9924
   Target FPR: 1.0000%
-  Actual FPR: 1.0075%
+  Actual FPR: 0.9924%
+
+=== FPR Validation [XXH3] (1M items) ===
+  False positives: 10038
+  Target FPR: 1.0000%
+  Actual FPR: 1.0038%
 ```
 
-All three land within ~0.02% of the 1% target. That's basically noise. So the hash "quality" argument for choosing `xxHash` or `Murmur3` over `FNV`? It doesn't hold up — with Kirsch-Mitzenmacher splitting a 64-bit hash into two 32-bit halves, even `FNV`'s simpler distribution is plenty. The math works :tada:.
+All four land within ~0.02% of the 1% target. That's basically noise. So the hash "quality" argument? FNV scores 5/10 on the [xxHash benchmark suite](https://xxhash.com/#benchmarks) with the note *"poor avalanche properties"*, while xxHash, Murmur3, and XXH3 all score a perfect 10 — and yet they all produce identical false positive rates. With Kirsch-Mitzenmacher splitting a 64-bit hash into two 32-bit halves, even FNV's simpler distribution is plenty. The math works :tada:.
 
 ## The Interface Allocation Plot Twist
 
-Ok so if hash quality doesn't matter... which one is *fastest*? I ran `FNV`, `xxHash`, and `Murmur3` head-to-head on the same 16-byte UUID keys:
+Ok so if hash quality doesn't matter... which one is *fastest*? I ran `FNV`, `xxHash`, `Murmur3`, and `XXH3` head-to-head on the same 16-byte UUID keys:
 
 ```text
-BenchmarkFilter_Add_FNV-16             	 91783116	    38.78 ns/op	   8 B/op	  1 allocs/op
-BenchmarkFilter_Add_xxHash-16          	 64360762	    46.74 ns/op	  80 B/op	  1 allocs/op
-BenchmarkFilter_Add_Murmur3-16         	 56808676	    55.37 ns/op	  96 B/op	  1 allocs/op
+BenchmarkFilter_Add_FNV-16             	 88184716	    39.07 ns/op	     8 B/op	  1 allocs/op
+BenchmarkFilter_Add_xxHash-16          	 66102469	    45.68 ns/op	    80 B/op	  1 allocs/op
+BenchmarkFilter_Add_Murmur3-16         	 68050894	    52.44 ns/op	    96 B/op	  1 allocs/op
+BenchmarkFilter_Add_XXH3-16            	 21895994	   153.5  ns/op	  1280 B/op	  1 allocs/op
 ```
 
-`FNV` wins, but with 16-byte keys `xxHash` is only **~20% slower**. That gap would be much wider with tiny payloads. So what's holding `xxHash` back?
+`FNV` wins by a landslide. And XXH3 — the *fastest hash in the world* by streaming benchmarks — is dead last at nearly **4× slower** than FNV. What happened?!
 
-The `-benchmem` column tells the whole story. Look at `B/op`: `FNV` allocates **8 bytes** per operation. `xxHash`? **80 bytes**. `Murmur3`? **96 bytes**. They all show `1 allocs/op`, but the *size* of each allocation is wildly different. Here's why:
+The `-benchmem` column tells the whole story. Look at `B/op`: `FNV` allocates **8 bytes** per operation. `xxHash`? **80 bytes**. `Murmur3`? **96 bytes**. `XXH3`? A whopping **1280 bytes**. They all show `1 allocs/op`, but the *size* of each allocation is wildly different.
 
-**The Interface Allocation Penalty**: Remember our `HashFunc` type (`HashFunc func() hash.Hash64`)? It returns a standard library interface. Because it returns an interface rather than a concrete struct, the Go compiler can't prove where the struct memory lives or how large it will be. This means a heap allocation *every single time* we call `f.hasher()` inside `Add` or `Contains`. `FNV` creates a tiny 8-byte struct. `Murmur3` and `xxHash` create much heavier wrappers just to satisfy the interface. (So the "flexibility" of our interface design is literally costing us performance... ironic, right? :sweat_smile:)
+**The Interface Allocation Penalty**: Remember our `HashFunc` type (`HashFunc func() hash.Hash64`)? It returns a standard library interface. Because it returns an interface rather than a concrete struct, the Go compiler can't prove where the struct memory lives or how large it will be. This means a heap allocation *every single time* we call `f.hasher()` inside `Add` or `Contains`. `FNV` creates a tiny 8-byte struct. `xxHash` and `Murmur3` create heavier wrappers. And `XXH3`? Its internal state for the SIMD-optimized algorithm needs **1280 bytes** just to exist — a massive struct that gets allocated and thrown away on every. single. call. The very thing that makes XXH3 blazing fast on large data (wide internal SIMD state) makes it catastrophically expensive to construct for small keys. (So the "flexibility" of our interface design is literally costing us performance... ironic, right? :sweat_smile:)
 
 The `Contains` benchmarks tell the same story:
 
 ```text
-BenchmarkFilter_Contains_FNV-16        	163290343	    22.01 ns/op	   8 B/op	  1 allocs/op
-BenchmarkFilter_Contains_xxHash-16     	113353339	    30.78 ns/op	  80 B/op	  1 allocs/op
-BenchmarkFilter_Contains_Murmur3-16    	 88988392	    39.68 ns/op	  96 B/op	  1 allocs/op
+BenchmarkFilter_Contains_FNV-16        	160837656	    22.20 ns/op	     8 B/op	  1 allocs/op
+BenchmarkFilter_Contains_xxHash-16     	123866376	    28.99 ns/op	    80 B/op	  1 allocs/op
+BenchmarkFilter_Contains_Murmur3-16    	 91996884	    38.76 ns/op	    96 B/op	  1 allocs/op
+BenchmarkFilter_Contains_XXH3-16       	 25076642	   145.9  ns/op	  1280 B/op	  1 allocs/op
 ```
 
-For our use case — UUID-length keys with Kirsch-Mitzenmacher — `FNV` gives us the best speed, the smallest allocations, and (as we saw above) identical false positive rates. The "quality" argument for `xxHash`/`Murmur3`? Doesn't apply here.
+For our use case — UUID-length keys with Kirsch-Mitzenmacher — `FNV` gives us the best speed, the smallest allocations, and (as we saw above) identical false positive rates. The streaming benchmarks on [xxhash.com](https://xxhash.com/#benchmarks) are measuring a completely different workload. When you're hashing 16 bytes at a time, the cost of *creating* the hasher dominates the cost of *running* it.
 
 
 ## Living With the No-Delete Constraint
